@@ -14,5 +14,28 @@ new Vue({
   el: '#app',
   router,
   components: { App },
-  template: '<App/>'
+  template: '<App/>',
+  data: {},
+  mounted() {
+
+  },
+  methods: {
+    initDBHelper: function () {
+      alert("123");
+      cordova.plugins.DBHelper.coolMethod("hello", onSuccess, onError);
+    },
+    onSuccess: function () { },
+    onerror: function () { },
+  },
 })
+if (process.env.NODE_ENV === 'production') {
+  window.document.addEventListener('deviceready', function () { alert("进入window.document.推送环节") }, false);
+
+
+  window.setTimeout(function () {
+    var e = document.createEvent('Events');
+    e.initEvent("deviceready", true, false);
+    document.dispatchEvent(e);
+  }, 50);
+}
+

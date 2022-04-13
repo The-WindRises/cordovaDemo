@@ -1,0 +1,17 @@
+{
+  "name": "DBHelper",
+  "version": "1.0.0",
+  "description": "",
+  "cordova": {
+    "id": "cordova.plugin.DBHelper",
+    "platforms": [
+      "android"
+    ]
+  },
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-android"
+  ],
+  "author": "liulei",
+  "license": "ISC"
+}

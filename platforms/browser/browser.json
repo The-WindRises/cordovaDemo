@@ -26,6 +26,9 @@
     },
     "cordova-plugin-inappbrowser": {
       "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
+    },
+    "cordova.plugin.DBHelper": {
+      "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
     }
   },
   "dependent_plugins": {},
@@ -95,11 +98,20 @@
       "id": "cordova-plugin-inappbrowser.InAppBrowserProxy",
       "pluginId": "cordova-plugin-inappbrowser",
       "runs": true
+    },
+    {
+      "file": "plugins/cordova.plugin.DBHelper/www/DBHelper.js",
+      "id": "cordova.plugin.DBHelper.DBHelper",
+      "pluginId": "cordova.plugin.DBHelper",
+      "clobbers": [
+        "cordova.plugins.DBHelper"
+      ]
     }
   ],
   "plugin_metadata": {
     "cordova-plugin-camera": "6.0.0",
     "cordova-plugin-network-information": "3.0.0",
-    "cordova-plugin-inappbrowser": "5.0.0"
+    "cordova-plugin-inappbrowser": "5.0.0",
+    "cordova.plugin.DBHelper": "1.0.0"
   }
 }

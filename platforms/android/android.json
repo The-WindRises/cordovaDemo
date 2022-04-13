@@ -19,6 +19,10 @@
             {
               "xml": "<feature name=\"InAppBrowser\"><param name=\"android-package\" value=\"org.apache.cordova.inappbrowser.InAppBrowser\" /></feature>",
               "count": 1
+            },
+            {
+              "xml": "<feature name=\"DBHelper\"><param name=\"android-package\" value=\"cordova.plugin.DBHelper.DBHelper\" /></feature>",
+              "count": 1
             }
           ]
         }
@@ -79,6 +83,9 @@
     },
     "cordova-plugin-inappbrowser": {
       "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
+    },
+    "cordova.plugin.DBHelper": {
+      "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
     }
   },
   "dependent_plugins": {},
@@ -138,11 +145,20 @@
       "clobbers": [
         "cordova.InAppBrowser.open"
       ]
+    },
+    {
+      "id": "cordova.plugin.DBHelper.DBHelper",
+      "file": "plugins/cordova.plugin.DBHelper/www/DBHelper.js",
+      "pluginId": "cordova.plugin.DBHelper",
+      "clobbers": [
+        "cordova.plugins.DBHelper"
+      ]
     }
   ],
   "plugin_metadata": {
     "cordova-plugin-camera": "6.0.0",
     "cordova-plugin-network-information": "3.0.0",
-    "cordova-plugin-inappbrowser": "5.0.0"
+    "cordova-plugin-inappbrowser": "5.0.0",
+    "cordova.plugin.DBHelper": "1.0.0"
   }
 }

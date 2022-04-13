@@ -55,11 +55,21 @@ cordova.define('cordova/plugin_list', function(require, exports, module) {
       "clobbers": [
         "cordova.InAppBrowser.open"
       ]
+    },
+    {
+      "id": "cordova.plugin.DBHelper.DBHelper",
+      "file": "plugins/cordova.plugin.DBHelper/www/DBHelper.js",
+      "pluginId": "cordova.plugin.DBHelper",
+      "clobbers": [
+        "cordova.plugins.DBHelper"
+      ]
     }
   ];
   module.exports.metadata = {
     "cordova-plugin-camera": "6.0.0",
     "cordova-plugin-network-information": "3.0.0",
-    "cordova-plugin-inappbrowser": "5.0.0"
+    "cordova-plugin-inappbrowser": "5.0.0",
+    "cordova.plugin.DBHelper": "1.0.0",
+    "cordova-plugin-whitelist": "1.3.4"
   };
 });

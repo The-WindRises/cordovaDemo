@@ -7,5 +7,5 @@
   "description": "Sample Apache Cordova App",
   "author": "Apache Cordova Team",
   "icons": [],
-  "start_url": "index.html"
+  "start_url": "http://192.168.1.27:8080"
 }

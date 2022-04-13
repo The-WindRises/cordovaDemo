@@ -22,5 +22,13 @@
     },
     "is_top_level": true,
     "variables": {}
+  },
+  "cordova.plugin.DBHelper": {
+    "source": {
+      "type": "local",
+      "path": "E:\\cordovaDemo\\node_modules\\DBHelper"
+    },
+    "is_top_level": true,
+    "variables": {}
   }
 }

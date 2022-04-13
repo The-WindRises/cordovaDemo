@@ -15,6 +15,9 @@
     },
     "cordova-plugin-inappbrowser": {
       "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
+    },
+    "cordova.plugin.DBHelper": {
+      "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
     }
   },
   "dependent_plugins": {}

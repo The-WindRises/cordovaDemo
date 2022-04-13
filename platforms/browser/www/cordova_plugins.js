@@ -65,6 +65,14 @@ module.exports = [
         "id": "cordova-plugin-inappbrowser.InAppBrowserProxy",
         "pluginId": "cordova-plugin-inappbrowser",
         "runs": true
+    },
+    {
+        "file": "plugins/cordova.plugin.DBHelper/www/DBHelper.js",
+        "id": "cordova.plugin.DBHelper.DBHelper",
+        "pluginId": "cordova.plugin.DBHelper",
+        "clobbers": [
+            "cordova.plugins.DBHelper"
+        ]
     }
 ];
 module.exports.metadata = 
@@ -72,7 +80,8 @@ module.exports.metadata =
 {
     "cordova-plugin-camera": "6.0.0",
     "cordova-plugin-network-information": "3.0.0",
-    "cordova-plugin-inappbrowser": "5.0.0"
+    "cordova-plugin-inappbrowser": "5.0.0",
+    "cordova.plugin.DBHelper": "1.0.0"
 }
 // BOTTOM OF METADATA
 });
