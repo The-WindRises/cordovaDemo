@@ -1,16 +1,15 @@
-import { Overlay, Button, Loading, Uploader, Toast, Cell, List, Tabs, Tab } from 'vant'
+import { Overlay, Button, Loading, Uploader, Toast, Cell, List, Tabs, Tab, Popup, DatetimePicker, PullRefresh, Form, Field, CellGroup } from 'vant'
 
 const vant = {
     install: function (Vue) {
-        Vue.use(Overlay)
-        Vue.use(Button)
-        Vue.use(Loading)
-        Vue.use(Uploader)
-        Vue.use(Toast)
-        Vue.use(List)
-        Vue.use(Cell)
-        Vue.use(Tabs)
-        Vue.use(Tab)
+        Vue.use(Overlay).use(Button)
+            .use(Loading)
+            .use(Uploader)
+            .use(Toast)
+            .use(List)
+            .use(Cell)
+            .use(Tabs)
+            .use(Tab).use(Popup).use(DatetimePicker).use(PullRefresh).use(Form).use(Field).use(CellGroup)
     }
 }
 
