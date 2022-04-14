@@ -1,4 +1,4 @@
-import { Overlay, Button, Loading, Uploader, Toast } from 'vant'
+import { Overlay, Button, Loading, Uploader, Toast, Cell, List, Tabs, Tab } from 'vant'
 
 const vant = {
     install: function (Vue) {
@@ -7,6 +7,10 @@ const vant = {
         Vue.use(Loading)
         Vue.use(Uploader)
         Vue.use(Toast)
+        Vue.use(List)
+        Vue.use(Cell)
+        Vue.use(Tabs)
+        Vue.use(Tab)
     }
 }
 
