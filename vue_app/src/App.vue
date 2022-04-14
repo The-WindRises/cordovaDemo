@@ -1,15 +1,17 @@
 <template>
   <div id="app">
-    <Login/>
+   
+    <router-view />
   </div>
 </template>
 
 <script>
-import Login from './views/Login.vue'
+import Login from "./views/Login.vue";
+import News from "./views/News.vue";
 export default {
   components: { Login },
-  name: 'App'
-}
+  name: "App",
+};
 </script>
 
 

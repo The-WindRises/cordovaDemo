@@ -10,9 +10,12 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "@vue/composition-api": "^1.4.9",
     "amfe-flexible": "^2.2.1",
+    "axios": "^0.26.1",
     "vant": "^2.12.47",
     "vue": "^2.5.2",
+    "vue-resource": "^1.5.3",
     "vue-router": "^3.0.1"
   },
   "devDependencies": {
