@@ -6,7 +6,10 @@
 
   <% if(process.env.NODE_ENV==='production' ){ %>
     <meta http-equiv="Content-Security-Policy"
-      content="default-src 'self' data: gap: https://ssl.gstatic.com http://v.juhe.cn 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: content:;">
+      content="default-src 'self' data: gap: https://ssl.gstatic.com  'unsafe-eval' http://v.juhe.cn; 
+      style-src 'self' 'unsafe-inline'; media-src *;
+       img-src 'self' data: content:;
+       font-src 'self' https://at.alicdn.com">
     <meta name="format-detection" content="telephone=no">
     <meta name="msapplication-tap-highlight" content="no">
     <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">

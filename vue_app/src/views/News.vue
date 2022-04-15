@@ -1,6 +1,6 @@
 <template>
   <div>
-    <van-tabs v-model="activeTab" @click="showPopup">
+    <van-tabs v-model="activeTab" @click="changeTab">
       <van-tab
         v-for="(k, index) in types"
         :key="index"
@@ -134,7 +134,7 @@ export default {
     changeTab(name, title) {
       this.type = name;
 
-      // this.getNewsList();
+      this.getNewsList();
     },
     showPopup() {
       this.showPop = true;
