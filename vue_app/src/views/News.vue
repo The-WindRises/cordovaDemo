@@ -1,5 +1,11 @@
 <template>
   <div>
+    <van-nav-bar title="工作列表" left-arrow @click-right="onClickRight">
+      <template #right>
+        <van-icon name="search" size="18" />
+      </template>
+    </van-nav-bar>
+
     <van-tabs v-model="activeTab" @click="changeTab">
       <van-tab
         v-for="(k, index) in types"
@@ -14,7 +20,7 @@
         >
           <van-list
             v-model="loading"
-            finished="finished"
+            :finished="finished"
             finished-text="没有更多了"
             @load="getNewsList"
             error-text="请求失败，点击重新加载"
@@ -24,7 +30,6 @@
               v-for="item in news"
               :key="item.uniquekey"
               :title="item.title"
-              @click="showPopup"
             >
               <template #icon>
                 <img
@@ -46,42 +51,44 @@
       </van-tab>
     </van-tabs>
     <van-popup
-      v-model:show="showPop"
+      v-model="showPop"
       position="right"
       :style="{ width: '70%', height: '100%' }"
-      ><div>
-        <van-form @submit="onSubmit">
-          <van-cell-group>
-            <van-field
-              v-model="work_name"
-              label="作业名称"
-              placeholder="请输入作业名称"
-            />
-          </van-cell-group>
-
-          <van-field
-            readonly
-            clickable
-            name="datetimePicker"
-            :value="create_time"
-            label="创建事件"
-            placeholder="点击选择时间"
-            @click="showPicker = true"
-          />
-          <van-popup v-model="showPicker" position="bottom">
-            <van-datetime-picker
-              type="time"
-              @confirm="onConfirm"
-              @cancel="showPicker = false"
-            />
-          </van-popup>
-          <div style="margin: 1rem">
-            <van-button plain type="primary">重置</van-button>
-            <van-button type="info">确认</van-button>
-          </div>
-        </van-form>
-      </div></van-popup
     >
+      <van-form @submit="onSubmit">
+        <van-field
+          v-model="work_name"
+          label="作业名称"
+          placeholder="请输入作业名称"
+        />
+
+        <van-field
+          readonly
+          clickable
+          name="datetimePicker"
+          :value="create_time"
+          label="创建时间"
+          placeholder="点击选择时间"
+          @click="showPicker = true"
+        />
+
+        <van-row id="submit_box" gutter="20rem">
+          <van-button plain type="primary" span="12" @click="reset"
+            >重置</van-button
+          >
+          <van-button type="info" span="12" native-type="submit"
+            >确认</van-button
+          >
+        </van-row>
+      </van-form>
+    </van-popup>
+    <van-popup v-model="showPicker" position="bottom">
+      <van-datetime-picker
+        type="time"
+        @confirm="onConfirm"
+        @cancel="showPicker = false"
+      />
+    </van-popup>
   </div>
 </template>
 <script>
@@ -103,8 +110,8 @@ export default {
       error: false,
       value: "",
       showPicker: false,
-      create_time:'',
-      work_name:''
+      create_time: "",
+      work_name: "",
     };
   },
   mounted() {
@@ -118,16 +125,22 @@ export default {
         .then((res) => {
           console.log(res);
           if (res.error_code === 0) {
-            this.news = res.result.data;
+            if (this.page == 1) {
+              this.news = res.result.data;
+            } else {
+              this.news.push(res.result.data);
+            }
+
+            this.page++;
           } else {
             this.error = true;
           }
-          this.finished = true;
+
           this.loading = false;
         })
         .catch((err) => {
           this.error = true;
-          this.finished = true;
+
           this.loading = false;
         });
     },
@@ -150,9 +163,22 @@ export default {
       this.create_time = time;
       this.showPicker = false;
     },
-    onSubmit(){
-
-    }
+    onSubmit() {},
+    reset() {
+      this.create_time = "";
+      this.work_name = "";
+    },
+    onClickRight() {
+      this.showPopup();
+    },
   },
 };
 </script>
+<style scoped>
+#submit_box {
+  position: fixed;
+  float: right;
+  bottom: 1rem;
+  margin-left: 30%;
+}
+</style>
