@@ -50,6 +50,9 @@
         </van-pull-refresh>
       </van-tab>
     </van-tabs>
+    <div>
+      <van-button type="primary" size="large" id="bottom_btn">+新增</van-button>
+    </div>
     <van-popup
       v-model="showPop"
       position="right"
@@ -134,17 +137,17 @@ export default {
             } else {
               this.news = this.news.concat(res.result.data);
             }
-                     this.page++;
+            this.page++;
           } else {
             this.error = true;
-             this.finished=true;
+            this.finished = true;
           }
 
           this.loading = false;
         })
         .catch((err) => {
           this.error = true;
-          this.finished=true;
+          this.finished = true;
           this.loading = false;
         });
     },
@@ -189,5 +192,13 @@ export default {
   float: right;
   bottom: 1rem;
   margin-left: 30%;
+}
+#bottom_btn {
+  width: 90%;
+  height: 3rem;
+  position: absolute;
+  bottom: 3rem;
+  display: block;
+  left: 5%;
 }
 </style>
