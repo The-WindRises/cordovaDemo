@@ -102,7 +102,7 @@ export default {
       // types: [{ top: "推荐" }, { guonei: "国内" }, { guoji: "国际" }],
       activeTab: 0,
       page: 1,
-      page_size: 10,
+      page_size: 30,
       news: [],
       loading: false,
       finished: false,
@@ -115,7 +115,11 @@ export default {
     };
   },
   mounted() {
-    // cordova.plugins.DBHelper.coolMethod("hello", onSuccess(), onError());
+    cordova.plugins.DBHelper.coolMethod(
+      "hello",
+      (onSuccess) => {},
+      (onError) => {}
+    );
   },
   methods: {
     getNewsList() {
@@ -128,19 +132,19 @@ export default {
             if (this.page == 1) {
               this.news = res.result.data;
             } else {
-              this.news.push(res.result.data);
+              this.news = this.news.concat(res.result.data);
             }
-
-            this.page++;
+                     this.page++;
           } else {
             this.error = true;
+             this.finished=true;
           }
 
           this.loading = false;
         })
         .catch((err) => {
           this.error = true;
-
+          this.finished=true;
           this.loading = false;
         });
     },
@@ -169,7 +173,12 @@ export default {
       this.work_name = "";
     },
     onClickRight() {
-      this.showPopup();
+      // this.showPopup();
+      cordova.plugins.DBHelper.coolMethod(
+        "hello",
+        (onSuccess) => {},
+        (onError) => {}
+      );
     },
   },
 };
