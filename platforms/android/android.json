@@ -5,15 +5,35 @@
   },
   "config_munge": {
     "files": {
+      "app/src/main/AndroidManifest.xml": {
+        "parents": {
+          "/manifest/application": [
+            {
+              "xml": "<application android:usesCleartextTraffic=\"true\" />",
+              "count": 1,
+              "mode": "merge",
+              "id": "config.xml",
+              "oldAttrib": {
+                "android:hardwareAccelerated": "true",
+                "android:icon": "@mipmap/ic_launcher",
+                "android:label": "@string/app_name",
+                "android:networkSecurityConfig": "@xml/network_security_config",
+                "android:supportsRtl": "true",
+                "android:usesCleartextTraffic": "true"
+              }
+            }
+          ]
+        }
+      },
       "res/xml/config.xml": {
         "parents": {
           "/*": [
             {
-              "xml": "<feature name=\"Camera\"><param name=\"android-package\" value=\"org.apache.cordova.camera.CameraLauncher\" /></feature>",
+              "xml": "<feature name=\"SqliteHelper\"><param name=\"android-package\" value=\"com.booway.sqlitehelper.SqliteHelper\" /></feature>",
               "count": 1
             },
             {
-              "xml": "<feature name=\"NetworkStatus\"><param name=\"android-package\" value=\"org.apache.cordova.networkinformation.NetworkManager\" /></feature>",
+              "xml": "<feature name=\"Camera\"><param name=\"android-package\" value=\"org.apache.cordova.camera.CameraLauncher\" /></feature>",
               "count": 1
             },
             {
@@ -21,7 +41,7 @@
               "count": 1
             },
             {
-              "xml": "<feature name=\"DBHelper\"><param name=\"android-package\" value=\"cordova.plugin.DBHelper.DBHelper\" /></feature>",
+              "xml": "<feature name=\"NetworkStatus\"><param name=\"android-package\" value=\"org.apache.cordova.networkinformation.NetworkManager\" /></feature>",
               "count": 1
             }
           ]
@@ -50,46 +70,34 @@
             }
           ]
         }
-      },
-      "app/src/main/AndroidManifest.xml": {
-        "parents": {
-          "/manifest/application": [
-            {
-              "xml": "<application android:usesCleartextTraffic=\"true\" />",
-              "count": 1,
-              "mode": "merge",
-              "id": "config.xml",
-              "oldAttrib": {
-                "android:hardwareAccelerated": "true",
-                "android:icon": "@mipmap/ic_launcher",
-                "android:label": "@string/app_name",
-                "android:networkSecurityConfig": "@xml/network_security_config",
-                "android:supportsRtl": "true",
-                "android:usesCleartextTraffic": "true"
-              }
-            }
-          ]
-        }
       }
     }
   },
   "installed_plugins": {
-    "cordova-plugin-camera": {
-      "ANDROIDX_CORE_VERSION": "1.6.+",
+    "com.booway.sqlitehelper": {
       "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
     },
-    "cordova-plugin-network-information": {
+    "cordova-plugin-camera": {
+      "ANDROIDX_CORE_VERSION": "1.6.+",
       "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
     },
     "cordova-plugin-inappbrowser": {
       "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
     },
-    "cordova.plugin.DBHelper": {
+    "cordova-plugin-network-information": {
       "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
     }
   },
   "dependent_plugins": {},
   "modules": [
+    {
+      "id": "com.booway.sqlitehelper.SqliteHelper",
+      "file": "plugins/com.booway.sqlitehelper/www/SqliteHelper.js",
+      "pluginId": "com.booway.sqlitehelper",
+      "clobbers": [
+        "SqliteHelper"
+      ]
+    },
     {
       "id": "cordova-plugin-camera.Camera",
       "file": "plugins/cordova-plugin-camera/www/CameraConstants.js",
@@ -123,6 +131,14 @@
       ]
     },
     {
+      "id": "cordova-plugin-inappbrowser.inappbrowser",
+      "file": "plugins/cordova-plugin-inappbrowser/www/inappbrowser.js",
+      "pluginId": "cordova-plugin-inappbrowser",
+      "clobbers": [
+        "cordova.InAppBrowser.open"
+      ]
+    },
+    {
       "id": "cordova-plugin-network-information.network",
       "file": "plugins/cordova-plugin-network-information/www/network.js",
       "pluginId": "cordova-plugin-network-information",
@@ -137,28 +153,12 @@
       "clobbers": [
         "Connection"
       ]
-    },
-    {
-      "id": "cordova-plugin-inappbrowser.inappbrowser",
-      "file": "plugins/cordova-plugin-inappbrowser/www/inappbrowser.js",
-      "pluginId": "cordova-plugin-inappbrowser",
-      "clobbers": [
-        "cordova.InAppBrowser.open"
-      ]
-    },
-    {
-      "id": "cordova.plugin.DBHelper.DBHelper",
-      "file": "plugins/cordova.plugin.DBHelper/www/DBHelper.js",
-      "pluginId": "cordova.plugin.DBHelper",
-      "clobbers": [
-        "cordova.plugins.DBHelper"
-      ]
     }
   ],
   "plugin_metadata": {
+    "com.booway.sqlitehelper": "0.0.1",
     "cordova-plugin-camera": "6.0.0",
-    "cordova-plugin-network-information": "3.0.0",
     "cordova-plugin-inappbrowser": "5.0.0",
-    "cordova.plugin.DBHelper": "1.0.0"
+    "cordova-plugin-network-information": "3.0.0"
   }
 }

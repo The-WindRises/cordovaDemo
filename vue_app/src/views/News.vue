@@ -177,10 +177,10 @@ export default {
     },
     onClickRight() {
       // this.showPopup();
-      cordova.plugins.DBHelper.coolMethod(
+      cordova.plugins.DBHelper.initDB(
         "hello",
-        (onSuccess) => {},
-        (onError) => {}
+        (success) => {},
+        (error) => {}
       );
     },
   },

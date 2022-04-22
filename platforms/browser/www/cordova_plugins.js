@@ -67,11 +67,11 @@ module.exports = [
         "runs": true
     },
     {
-        "file": "plugins/cordova.plugin.DBHelper/www/DBHelper.js",
-        "id": "cordova.plugin.DBHelper.DBHelper",
-        "pluginId": "cordova.plugin.DBHelper",
+        "file": "plugins/com.booway.sqlitehelper/www/SqliteHelper.js",
+        "id": "com.booway.sqlitehelper.SqliteHelper",
+        "pluginId": "com.booway.sqlitehelper",
         "clobbers": [
-            "cordova.plugins.DBHelper"
+            "SqliteHelper"
         ]
     }
 ];
@@ -81,7 +81,7 @@ module.exports.metadata =
     "cordova-plugin-camera": "6.0.0",
     "cordova-plugin-network-information": "3.0.0",
     "cordova-plugin-inappbrowser": "5.0.0",
-    "cordova.plugin.DBHelper": "1.0.0"
+    "com.booway.sqlitehelper": "0.0.1"
 }
 // BOTTOM OF METADATA
 });

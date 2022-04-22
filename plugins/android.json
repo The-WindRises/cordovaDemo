@@ -7,17 +7,17 @@
     "files": {}
   },
   "installed_plugins": {
-    "cordova-plugin-camera": {
-      "ANDROIDX_CORE_VERSION": "1.6.+",
+    "com.booway.sqlitehelper": {
       "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
     },
-    "cordova-plugin-network-information": {
+    "cordova-plugin-camera": {
+      "ANDROIDX_CORE_VERSION": "1.6.+",
       "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
     },
     "cordova-plugin-inappbrowser": {
       "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
     },
-    "cordova.plugin.DBHelper": {
+    "cordova-plugin-network-information": {
       "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
     }
   },

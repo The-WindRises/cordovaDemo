@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<plugin id="com.booway.sqlitehelper" version="0.0.1"
+    xmlns="http://apache.org/cordova/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <name>SqliteHelper</name>
+    <js-module name="SqliteHelper" src="www/SqliteHelper.js">
+        <clobbers target="SqliteHelper" />
+    </js-module>
+    <platform name="android">
+        <config-file parent="/*" target="res/xml/config.xml">
+            <feature name="SqliteHelper">
+                <param name="android-package" value="com.booway.sqlitehelper.SqliteHelper" />
+            </feature>
+        </config-file>
+        <config-file parent="/*" target="AndroidManifest.xml"></config-file>
+        <source-file src="src/android/SqliteHelper.java" target-dir="src/com/booway/sqlitehelper" />
+        <source-file src="src/android/BoowaySQLiteHelper.java" target-dir="src/com/booway/sqlitehelper" />
+    </platform>
+</plugin>

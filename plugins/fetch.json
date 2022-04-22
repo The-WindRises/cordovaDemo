@@ -10,7 +10,7 @@
   "cordova-plugin-network-information": {
     "source": {
       "type": "registry",
-      "id": "cordova-plugin-network-information@3.0.0"
+      "id": "cordova-plugin-network-information@^3.0.0"
     },
     "is_top_level": true,
     "variables": {}
@@ -23,10 +23,10 @@
     "is_top_level": true,
     "variables": {}
   },
-  "cordova.plugin.DBHelper": {
+  "com.booway.sqlitehelper": {
     "source": {
       "type": "local",
-      "path": "E:\\cordovaDemo\\node_modules\\DBHelper"
+      "path": "E:\\cordovaDemo\\node_modules\\com.booway.sqlitehelper"
     },
     "is_top_level": true,
     "variables": {}

@@ -1,9 +1,9 @@
 {
-  "name": "DBHelper",
-  "version": "1.0.0",
+  "name": "com.booway.sqlitehelper",
+  "version": "0.0.1",
   "description": "",
   "cordova": {
-    "id": "cordova.plugin.DBHelper",
+    "id": "com.booway.sqlitehelper",
     "platforms": [
       "android"
     ]

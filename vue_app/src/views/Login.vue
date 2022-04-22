@@ -3,6 +3,9 @@
     <van-button type="info" class="van_button" @click="loginClick()"
       >进入
     </van-button>
+      <van-button type="info" class="van_button" @click="dBClick()"
+      >DBHelper插件
+    </van-button>
   </div>
 </template>
 
@@ -16,8 +19,11 @@ export default {
   methods: {
     loginClick() {
       this.$router.push({ name: "/News" });
-      // cordova.plugins.DBHelper.coolMethod("hello", onSuccess(), onError());
+
     },
+    dBClick(){
+       this.$router.push({ name: "/DB" });
+    }
   },
 };
 </script>
@@ -26,7 +32,7 @@ export default {
 .van_button {
   display: block;
   margin: 0 auto;
-  margin-top: 20rem;
+  margin-top: 5rem;
   background-color: chocolate;
   border: 0rem;
 }
