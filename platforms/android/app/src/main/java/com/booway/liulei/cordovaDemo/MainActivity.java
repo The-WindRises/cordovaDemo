@@ -19,8 +19,9 @@
 
 package com.booway.liulei.cordovaDemo;
 
+import org.apache.cordova.CordovaActivity;
+
 import android.os.Bundle;
-import org.apache.cordova.*;
 
 public class MainActivity extends CordovaActivity
 {
@@ -31,7 +32,8 @@ public class MainActivity extends CordovaActivity
 
         // enable Cordova apps to be started in the background
         Bundle extras = getIntent().getExtras();
-        if (extras != null && extras.getBoolean("cdvStartInBackground", false)) {
+        if (extras != null && extras.getBoolean("cdvStartInBackground", false))
+        {
             moveTaskToBack(true);
         }
 

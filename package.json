@@ -14,6 +14,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "DBHelper": "file:DBHelper",
+    "com.booway.compass": "file:Compass",
     "com.booway.sqlitehelper": "file:SqliteHelper",
     "cordova-android": "^10.1.2",
     "cordova-plugin-camera": "^6.0.0",
@@ -28,7 +29,8 @@
       "cordova-plugin-camera": {},
       "cordova-plugin-network-information": {},
       "cordova-plugin-inappbrowser": {},
-      "com.booway.sqlitehelper": {}
+      "com.booway.sqlitehelper": {},
+      "com.booway.compass": {}
     }
   },
   "dependencies": {

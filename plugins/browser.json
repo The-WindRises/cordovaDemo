@@ -18,6 +18,9 @@
     },
     "com.booway.sqlitehelper": {
       "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
+    },
+    "com.booway.compass": {
+      "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
     }
   },
   "dependent_plugins": {}

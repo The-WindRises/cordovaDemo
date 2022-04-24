@@ -63,12 +63,21 @@ cordova.define('cordova/plugin_list', function(require, exports, module) {
       "clobbers": [
         "Connection"
       ]
+    },
+    {
+      "id": "com.booway.compass.Compass",
+      "file": "plugins/com.booway.compass/www/Compass.js",
+      "pluginId": "com.booway.compass",
+      "clobbers": [
+        "Compass"
+      ]
     }
   ];
   module.exports.metadata = {
     "com.booway.sqlitehelper": "0.0.1",
     "cordova-plugin-camera": "6.0.0",
     "cordova-plugin-inappbrowser": "5.0.0",
-    "cordova-plugin-network-information": "3.0.0"
+    "cordova-plugin-network-information": "3.0.0",
+    "com.booway.compass": "0.0.2"
   };
 });

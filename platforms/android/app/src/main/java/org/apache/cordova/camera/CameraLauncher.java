@@ -18,6 +18,25 @@
 */
 package org.apache.cordova.camera;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.apache.cordova.BuildHelper;
+import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.LOG;
+import org.apache.cordova.PermissionHelper;
+import org.apache.cordova.PluginResult;
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import android.Manifest;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -39,48 +58,31 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import androidx.core.content.FileProvider;
 import android.util.Base64;
 
-import org.apache.cordova.BuildHelper;
-import org.apache.cordova.CallbackContext;
-import org.apache.cordova.CordovaPlugin;
-import org.apache.cordova.LOG;
-import org.apache.cordova.PermissionHelper;
-import org.apache.cordova.PluginResult;
-import org.json.JSONArray;
-import org.json.JSONException;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import androidx.core.content.FileProvider;
 
 /**
  * This class launches the camera view, allows the user to take a picture, closes the camera view,
  * and returns the captured image.  When the camera view is closed, the screen displayed before
  * the camera view was shown is redisplayed.
  */
-public class CameraLauncher extends CordovaPlugin implements MediaScannerConnectionClient {
+public class CameraLauncher extends CordovaPlugin implements MediaScannerConnectionClient
+{
 
-    private static final int DATA_URL = 0;              // Return base64 encoded string
-    private static final int FILE_URI = 1;              // Return file uri (content://media/external/images/media/2 for Android)
+    private static final int DATA_URL = 0; // Return base64 encoded string
+    private static final int FILE_URI = 1; // Return file uri (content://media/external/images/media/2 for Android)
 
-    private static final int PHOTOLIBRARY = 0;          // Choose image from picture library (same as SAVEDPHOTOALBUM for Android)
-    private static final int CAMERA = 1;                // Take picture from camera
-    private static final int SAVEDPHOTOALBUM = 2;       // Choose image from picture library (same as PHOTOLIBRARY for Android)
+    private static final int PHOTOLIBRARY = 0; // Choose image from picture library (same as SAVEDPHOTOALBUM for Android)
+    private static final int CAMERA = 1; // Take picture from camera
+    private static final int SAVEDPHOTOALBUM = 2; // Choose image from picture library (same as PHOTOLIBRARY for Android)
 
-    private static final int PICTURE = 0;               // allow selection of still pictures only. DEFAULT. Will return format specified via DestinationType
-    private static final int VIDEO = 1;                 // allow selection of video only, ONLY RETURNS URL
-    private static final int ALLMEDIA = 2;              // allow selection from all media types
+    private static final int PICTURE = 0; // allow selection of still pictures only. DEFAULT. Will return format specified via DestinationType
+    private static final int VIDEO = 1; // allow selection of video only, ONLY RETURNS URL
+    private static final int ALLMEDIA = 2; // allow selection from all media types
 
-    private static final int JPEG = 0;                  // Take a picture of type JPEG
-    private static final int PNG = 1;                   // Take a picture of type PNG
+    private static final int JPEG = 0; // Take a picture of type JPEG
+    private static final int PNG = 1; // Take a picture of type PNG
     private static final String JPEG_TYPE = "jpg";
     private static final String PNG_TYPE = "png";
     private static final String JPEG_EXTENSION = "." + JPEG_TYPE;
@@ -108,32 +110,32 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
     private static final String TIME_FORMAT = "yyyyMMdd_HHmmss";
 
-    private int mQuality;                   // Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
-    private int targetWidth;                // desired width of the image
-    private int targetHeight;               // desired height of the image
-    private Uri imageUri;                   // Uri of captured image
-    private String imageFilePath;           // File where the image is stored
-    private int encodingType;               // Type of encoding to use
-    private int mediaType;                  // What type of media to retrieve
-    private int destType;                   // Source type (needs to be saved for the permission handling)
-    private int srcType;                    // Destination type (needs to be saved for permission handling)
-    private boolean saveToPhotoAlbum;       // Should the picture be saved to the device's photo album
-    private boolean correctOrientation;     // Should the pictures orientation be corrected
-    private boolean orientationCorrected;   // Has the picture's orientation been corrected
-    private boolean allowEdit;              // Should we allow the user to crop the image.
+    private int mQuality; // Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
+    private int targetWidth; // desired width of the image
+    private int targetHeight; // desired height of the image
+    private Uri imageUri; // Uri of captured image
+    private String imageFilePath; // File where the image is stored
+    private int encodingType; // Type of encoding to use
+    private int mediaType; // What type of media to retrieve
+    private int destType; // Source type (needs to be saved for the permission handling)
+    private int srcType; // Destination type (needs to be saved for permission handling)
+    private boolean saveToPhotoAlbum; // Should the picture be saved to the device's photo album
+    private boolean correctOrientation; // Should the pictures orientation be corrected
+    private boolean orientationCorrected; // Has the picture's orientation been corrected
+    private boolean allowEdit; // Should we allow the user to crop the image.
 
-    protected final static String[] permissions = { Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE };
+    protected final static String[] permissions = {Manifest.permission.CAMERA,
+        Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     public CallbackContext callbackContext;
     private int numPics;
 
-    private MediaScannerConnection conn;    // Used to update gallery app with newly-written files
-    private Uri scanMe;                     // Uri of image to be added to content store
+    private MediaScannerConnection conn; // Used to update gallery app with newly-written files
+    private Uri scanMe; // Uri of image to be added to content store
     private Uri croppedUri;
     private String croppedFilePath;
-    private ExifHelper exifData;            // Exif data from source
+    private ExifHelper exifData; // Exif data from source
     private String applicationId;
-
 
     /**
      * Executes the request and returns PluginResult.
@@ -143,15 +145,16 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @param callbackContext   The callback id used when calling back into JavaScript.
      * @return                  A PluginResult object with a status and message.
      */
-    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException
+    {
         this.callbackContext = callbackContext;
         //Adding an API to CoreAndroid to get the BuildConfigValue
         //This allows us to not make this a breaking change to embedding
         this.applicationId = (String) BuildHelper.getBuildConfigValue(cordova.getActivity(), "APPLICATION_ID");
         this.applicationId = preferences.getString("applicationId", this.applicationId);
 
-
-        if (action.equals(TAKE_PICTURE_ACTION)) {
+        if (action.equals(TAKE_PICTURE_ACTION))
+        {
             this.srcType = CAMERA;
             this.destType = FILE_URI;
             this.saveToPhotoAlbum = false;
@@ -175,34 +178,41 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
             // If the user specifies a 0 or smaller width/height
             // make it -1 so later comparisons succeed
-            if (this.targetWidth < 1) {
+            if (this.targetWidth < 1)
+            {
                 this.targetWidth = -1;
             }
-            if (this.targetHeight < 1) {
+            if (this.targetHeight < 1)
+            {
                 this.targetHeight = -1;
             }
 
             // We don't return full-quality PNG files. The camera outputs a JPEG
             // so requesting it as a PNG provides no actual benefit
-            if (this.targetHeight == -1 && this.targetWidth == -1 && this.mQuality == 100 &&
-                    !this.correctOrientation && this.encodingType == PNG && this.srcType == CAMERA) {
+            if (this.targetHeight == -1 && this.targetWidth == -1 && this.mQuality == 100 && !this.correctOrientation
+                    && this.encodingType == PNG && this.srcType == CAMERA)
+            {
                 this.encodingType = JPEG;
             }
 
-            try {
-                if (this.srcType == CAMERA) {
+            try
+            {
+                if (this.srcType == CAMERA)
+                {
                     this.callTakePicture(destType, encodingType);
-                }
-                else if ((this.srcType == PHOTOLIBRARY) || (this.srcType == SAVEDPHOTOALBUM)) {
+                } else if ((this.srcType == PHOTOLIBRARY) || (this.srcType == SAVEDPHOTOALBUM))
+                {
                     // FIXME: Stop always requesting the permission
-                    if(!PermissionHelper.hasPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                        PermissionHelper.requestPermission(this, SAVE_TO_ALBUM_SEC, Manifest.permission.READ_EXTERNAL_STORAGE);
-                    } else {
+                    if (!PermissionHelper.hasPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE))
+                    {
+                        PermissionHelper.requestPermission(this, SAVE_TO_ALBUM_SEC,
+                                Manifest.permission.READ_EXTERNAL_STORAGE);
+                    } else
+                    {
                         this.getImage(this.srcType, destType);
                     }
                 }
-            }
-            catch (IllegalArgumentException e)
+            } catch (IllegalArgumentException e)
             {
                 callbackContext.error("Illegal Argument Exception");
                 PluginResult r = new PluginResult(PluginResult.Status.ERROR);
@@ -223,7 +233,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     // LOCAL METHODS
     //--------------------------------------------------------------------------
 
-    private String getTempDirectoryPath() {
+    private String getTempDirectoryPath()
+    {
         File cache = cordova.getActivity().getCacheDir();
         // Create the cache directory if it doesn't exist
         cache.mkdirs();
@@ -244,7 +255,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @param returnType        Set the type of image to return.
      * @param encodingType           Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
      */
-    public void callTakePicture(int returnType, int encodingType) {
+    public void callTakePicture(int returnType, int encodingType)
+    {
         boolean saveAlbumPermission = PermissionHelper.hasPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 && PermissionHelper.hasPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         boolean takePicturePermission = PermissionHelper.hasPermission(this, Manifest.permission.CAMERA);
@@ -253,33 +265,45 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         // in AndroidManifest.xml. This plugin does not declare it, but others may and so we must
         // check the package info to determine if the permission is present.
 
-        if (!takePicturePermission) {
+        if (!takePicturePermission)
+        {
             takePicturePermission = true;
-            try {
+            try
+            {
                 PackageManager packageManager = this.cordova.getActivity().getPackageManager();
-                String[] permissionsInPackage = packageManager.getPackageInfo(this.cordova.getActivity().getPackageName(), PackageManager.GET_PERMISSIONS).requestedPermissions;
-                if (permissionsInPackage != null) {
-                    for (String permission : permissionsInPackage) {
-                        if (permission.equals(Manifest.permission.CAMERA)) {
+                String[] permissionsInPackage = packageManager.getPackageInfo(
+                        this.cordova.getActivity().getPackageName(),
+                        PackageManager.GET_PERMISSIONS).requestedPermissions;
+                if (permissionsInPackage != null)
+                {
+                    for (String permission : permissionsInPackage)
+                    {
+                        if (permission.equals(Manifest.permission.CAMERA))
+                        {
                             takePicturePermission = false;
                             break;
                         }
                     }
                 }
-            } catch (NameNotFoundException e) {
+            } catch (NameNotFoundException e)
+            {
                 // We are requesting the info for our package, so this should
                 // never be caught
             }
         }
 
-        if (takePicturePermission && saveAlbumPermission) {
+        if (takePicturePermission && saveAlbumPermission)
+        {
             takePicture(returnType, encodingType);
-        } else if (saveAlbumPermission) {
+        } else if (saveAlbumPermission)
+        {
             PermissionHelper.requestPermission(this, TAKE_PIC_SEC, Manifest.permission.CAMERA);
-        } else if (takePicturePermission) {
-            PermissionHelper.requestPermissions(this, TAKE_PIC_SEC,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE});
-        } else {
+        } else if (takePicturePermission)
+        {
+            PermissionHelper.requestPermissions(this, TAKE_PIC_SEC, new String[]{
+                Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE});
+        } else
+        {
             PermissionHelper.requestPermissions(this, TAKE_PIC_SEC, permissions);
         }
     }
@@ -296,26 +320,25 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         File photo = createCaptureFile(encodingType);
         this.imageFilePath = photo.getAbsolutePath();
         this.imageUri = FileProvider.getUriForFile(cordova.getActivity(),
-                applicationId + ".cordova.plugin.camera.provider",
-                photo);
+                applicationId + ".cordova.plugin.camera.provider", photo);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
         //We can write to this URI, this will hopefully allow us to write files to get to the next step
         intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
-        if (this.cordova != null) {
+        if (this.cordova != null)
+        {
             // Let's check to make sure the camera is actually installed. (Legacy Nexus 7 code)
             PackageManager mPm = this.cordova.getActivity().getPackageManager();
-            if(intent.resolveActivity(mPm) != null)
+            if (intent.resolveActivity(mPm) != null)
             {
                 this.cordova.startActivityForResult((CordovaPlugin) this, intent, (CAMERA + 1) * 16 + returnType + 1);
-            }
-            else
+            } else
             {
                 LOG.d(LOG_TAG, "Error: You don't have a default camera.  Your device may not be CTS complaint.");
             }
         }
-//        else
-//            LOG.d(LOG_TAG, "ERROR: You must use the CordovaInterface for this to work correctly. Please implement it in your activity");
+        //        else
+        //            LOG.d(LOG_TAG, "ERROR: You must use the CordovaInterface for this to work correctly. Please implement it in your activity");
     }
 
     /**
@@ -324,7 +347,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @param encodingType of the image to be taken
      * @return a File object pointing to the temporary picture
      */
-    private File createCaptureFile(int encodingType) {
+    private File createCaptureFile(int encodingType)
+    {
         return createCaptureFile(encodingType, "");
     }
 
@@ -335,22 +359,26 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @param fileName or resultant File object.
      * @return a File object pointing to the temporary picture
      */
-    private File createCaptureFile(int encodingType, String fileName) {
-        if (fileName.isEmpty()) {
+    private File createCaptureFile(int encodingType, String fileName)
+    {
+        if (fileName.isEmpty())
+        {
             fileName = ".Pic";
         }
 
-        if (encodingType == JPEG) {
+        if (encodingType == JPEG)
+        {
             fileName = fileName + JPEG_EXTENSION;
-        } else if (encodingType == PNG) {
+        } else if (encodingType == PNG)
+        {
             fileName = fileName + PNG_EXTENSION;
-        } else {
+        } else
+        {
             throw new IllegalArgumentException("Invalid Encoding Type: " + encodingType);
         }
 
         return new File(getTempDirectoryPath(), fileName);
     }
-
 
     /**
      * Get image from photo library.
@@ -360,23 +388,29 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      */
     // TODO: Images selected from SDCARD don't display correctly, but from CAMERA ALBUM do!
     // TODO: Images from kitkat filechooser not going into crop function
-    public void getImage(int srcType, int returnType) {
+    public void getImage(int srcType, int returnType)
+    {
         Intent intent = new Intent();
         String title = GET_PICTURE;
         croppedUri = null;
         croppedFilePath = null;
-        if (this.mediaType == PICTURE) {
+        if (this.mediaType == PICTURE)
+        {
             intent.setType("image/*");
-            if (this.allowEdit) {
+            if (this.allowEdit)
+            {
                 intent.setAction(Intent.ACTION_PICK);
                 intent.putExtra("crop", "true");
-                if (targetWidth > 0) {
+                if (targetWidth > 0)
+                {
                     intent.putExtra("outputX", targetWidth);
                 }
-                if (targetHeight > 0) {
+                if (targetHeight > 0)
+                {
                     intent.putExtra("outputY", targetHeight);
                 }
-                if (targetHeight > 0 && targetWidth > 0 && targetWidth == targetHeight) {
+                if (targetHeight > 0 && targetWidth > 0 && targetWidth == targetHeight)
+                {
                     intent.putExtra("aspectX", 1);
                     intent.putExtra("aspectY", 1);
                 }
@@ -384,16 +418,19 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 croppedFilePath = croppedFile.getAbsolutePath();
                 croppedUri = Uri.fromFile(croppedFile);
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, croppedUri);
-            } else {
+            } else
+            {
                 intent.setAction(Intent.ACTION_GET_CONTENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
             }
-        } else if (this.mediaType == VIDEO) {
+        } else if (this.mediaType == VIDEO)
+        {
             intent.setType("video/*");
             title = GET_VIDEO;
             intent.setAction(Intent.ACTION_GET_CONTENT);
             intent.addCategory(Intent.CATEGORY_OPENABLE);
-        } else if (this.mediaType == ALLMEDIA) {
+        } else if (this.mediaType == ALLMEDIA)
+        {
             // I wanted to make the type 'image/*, video/*' but this does not work on all versions
             // of android so I had to go with the wildcard search.
             intent.setType("*/*");
@@ -401,9 +438,10 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             intent.setAction(Intent.ACTION_GET_CONTENT);
             intent.addCategory(Intent.CATEGORY_OPENABLE);
         }
-        if (this.cordova != null) {
-            this.cordova.startActivityForResult((CordovaPlugin) this, Intent.createChooser(intent,
-                    new String(title)), (srcType + 1) * 16 + returnType + 1);
+        if (this.cordova != null)
+        {
+            this.cordova.startActivityForResult((CordovaPlugin) this, Intent.createChooser(intent, new String(title)),
+                    (srcType + 1) * 16 + returnType + 1);
         }
     }
 
@@ -412,8 +450,10 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      *
      * @param picUri
      */
-    private void performCrop(Uri picUri, int destType, Intent cameraIntent) {
-        try {
+    private void performCrop(Uri picUri, int destType, Intent cameraIntent)
+    {
+        try
+        {
             Intent cropIntent = new Intent("com.android.camera.action.CROP");
             // indicate image type and Uri
             cropIntent.setDataAndType(picUri, "image/*");
@@ -421,13 +461,16 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             cropIntent.putExtra("crop", "true");
 
             // indicate output X and Y
-            if (targetWidth > 0) {
+            if (targetWidth > 0)
+            {
                 cropIntent.putExtra("outputX", targetWidth);
             }
-            if (targetHeight > 0) {
+            if (targetHeight > 0)
+            {
                 cropIntent.putExtra("outputY", targetHeight);
             }
-            if (targetHeight > 0 && targetWidth > 0 && targetWidth == targetHeight) {
+            if (targetHeight > 0 && targetWidth > 0 && targetWidth == targetHeight)
+            {
                 cropIntent.putExtra("aspectX", 1);
                 cropIntent.putExtra("aspectY", 1);
             }
@@ -440,15 +483,18 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
             // start the activity - we handle returning in onActivityResult
 
-            if (this.cordova != null) {
-                this.cordova.startActivityForResult((CordovaPlugin) this,
-                        cropIntent, CROP_CAMERA + destType);
+            if (this.cordova != null)
+            {
+                this.cordova.startActivityForResult((CordovaPlugin) this, cropIntent, CROP_CAMERA + destType);
             }
-        } catch (ActivityNotFoundException anfe) {
+        } catch (ActivityNotFoundException anfe)
+        {
             LOG.e(LOG_TAG, "Crop operation not supported on this device");
-            try {
+            try
+            {
                 processResultFromCamera(destType, cameraIntent);
-            } catch (IOException e) {
+            } catch (IOException e)
+            {
                 e.printStackTrace();
                 LOG.e(LOG_TAG, "Unable to write to file");
             }
@@ -461,24 +507,26 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @param destType          In which form should we return the image
      * @param intent            An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
      */
-    private void processResultFromCamera(int destType, Intent intent) throws IOException {
+    private void processResultFromCamera(int destType, Intent intent) throws IOException
+    {
         int rotate = 0;
 
         // Create an ExifHelper to save the exif data that is lost during compression
         ExifHelper exif = new ExifHelper();
 
-        String sourcePath = (this.allowEdit && this.croppedUri != null) ?
-                this.croppedFilePath :
-                this.imageFilePath;
+        String sourcePath = (this.allowEdit && this.croppedUri != null) ? this.croppedFilePath : this.imageFilePath;
 
-        if (this.encodingType == JPEG) {
-            try {
+        if (this.encodingType == JPEG)
+        {
+            try
+            {
                 //We don't support PNG, so let's not pretend we do
                 exif.createInFile(sourcePath);
                 exif.readExifData();
                 rotate = exif.getOrientation();
 
-            } catch (IOException e) {
+            } catch (IOException e)
+            {
                 e.printStackTrace();
             }
         }
@@ -489,79 +537,93 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         // CB-5479 When this option is given the unchanged image should be saved
         // in the gallery and the modified image is saved in the temporary
         // directory
-        if (this.saveToPhotoAlbum) {
+        if (this.saveToPhotoAlbum)
+        {
             GalleryPathVO galleryPathVO = getPicturesPath();
             galleryUri = Uri.fromFile(new File(galleryPathVO.getGalleryPath()));
 
-            if (this.allowEdit && this.croppedUri != null) {
+            if (this.allowEdit && this.croppedUri != null)
+            {
                 writeUncompressedImage(croppedUri, galleryUri);
-            } else {
-                if (Build.VERSION.SDK_INT <= 28) { // Between LOLLIPOP_MR1 and P, can be changed later to the constant Build.VERSION_CODES.P
+            } else
+            {
+                if (Build.VERSION.SDK_INT <= 28)
+                { // Between LOLLIPOP_MR1 and P, can be changed later to the constant Build.VERSION_CODES.P
                     writeTakenPictureToGalleryLowerThanAndroidQ(galleryUri);
-                } else { // Android Q or higher
+                } else
+                { // Android Q or higher
                     writeTakenPictureToGalleryStartingFromAndroidQ(galleryPathVO);
                 }
             }
         }
 
         // If sending base64 image back
-        if (destType == DATA_URL) {
+        if (destType == DATA_URL)
+        {
             bitmap = getScaledAndRotatedBitmap(sourcePath);
 
-            if (bitmap == null) {
+            if (bitmap == null)
+            {
                 // Try to get the bitmap from intent.
                 bitmap = (Bitmap) intent.getExtras().get("data");
             }
 
             // Double-check the bitmap.
-            if (bitmap == null) {
+            if (bitmap == null)
+            {
                 LOG.d(LOG_TAG, "I either have a null image path or bitmap");
                 this.failPicture("Unable to create bitmap!");
                 return;
             }
 
-
             this.processPicture(bitmap, this.encodingType);
 
-            if (!this.saveToPhotoAlbum) {
+            if (!this.saveToPhotoAlbum)
+            {
                 checkForDuplicateImage(DATA_URL);
             }
         }
 
         // If sending filename back
-        else if (destType == FILE_URI) {
+        else if (destType == FILE_URI)
+        {
             // If all this is true we shouldn't compress the image.
-            if (this.targetHeight == -1 && this.targetWidth == -1 && this.mQuality == 100 &&
-                    !this.correctOrientation) {
+            if (this.targetHeight == -1 && this.targetWidth == -1 && this.mQuality == 100 && !this.correctOrientation)
+            {
 
                 // If we saved the uncompressed photo to the album, we can just
                 // return the URI we already created
-                if (this.saveToPhotoAlbum) {
+                if (this.saveToPhotoAlbum)
+                {
                     this.callbackContext.success(galleryUri.toString());
-                } else {
+                } else
+                {
                     Uri uri = Uri.fromFile(createCaptureFile(this.encodingType, System.currentTimeMillis() + ""));
 
-                    if (this.allowEdit && this.croppedUri != null) {
+                    if (this.allowEdit && this.croppedUri != null)
+                    {
                         Uri croppedUri = Uri.parse(croppedFilePath);
                         writeUncompressedImage(croppedUri, uri);
-                    } else {
+                    } else
+                    {
                         Uri imageUri = this.imageUri;
                         writeUncompressedImage(imageUri, uri);
                     }
 
                     this.callbackContext.success(uri.toString());
                 }
-            } else {
+            } else
+            {
                 Uri uri = Uri.fromFile(createCaptureFile(this.encodingType, System.currentTimeMillis() + ""));
                 bitmap = getScaledAndRotatedBitmap(sourcePath);
 
                 // Double-check the bitmap.
-                if (bitmap == null) {
+                if (bitmap == null)
+                {
                     LOG.d(LOG_TAG, "I either have a null image path or bitmap");
                     this.failPicture("Unable to create bitmap!");
                     return;
                 }
-
 
                 // Add compressed version of captured image to returned media store Uri
                 OutputStream os = this.cordova.getActivity().getContentResolver().openOutputStream(uri);
@@ -571,11 +633,12 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 os.close();
 
                 // Restore exif data to file
-                if (this.encodingType == JPEG) {
+                if (this.encodingType == JPEG)
+                {
                     String exifPath;
                     exifPath = uri.getPath();
                     //We just finished rotating it by an arbitrary orientation, just make sure it's normal
-                    if(rotate != ExifInterface.ORIENTATION_NORMAL)
+                    if (rotate != ExifInterface.ORIENTATION_NORMAL)
                         exif.resetOrientation();
                     exif.createOutFile(exifPath);
                     exif.writeExifData();
@@ -585,7 +648,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 this.callbackContext.success(uri.toString());
 
             }
-        } else {
+        } else
+        {
             throw new IllegalStateException();
         }
 
@@ -593,12 +657,14 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         bitmap = null;
     }
 
-    private void writeTakenPictureToGalleryLowerThanAndroidQ(Uri galleryUri) throws IOException {
+    private void writeTakenPictureToGalleryLowerThanAndroidQ(Uri galleryUri) throws IOException
+    {
         writeUncompressedImage(imageUri, galleryUri);
         refreshGallery(galleryUri);
     }
 
-    private void writeTakenPictureToGalleryStartingFromAndroidQ(GalleryPathVO galleryPathVO) throws IOException {
+    private void writeTakenPictureToGalleryStartingFromAndroidQ(GalleryPathVO galleryPathVO) throws IOException
+    {
         // Starting from Android Q, working with the ACTION_MEDIA_SCANNER_SCAN_FILE intent is deprecated
         // https://developer.android.com/reference/android/content/Intent#ACTION_MEDIA_SCANNER_SCAN_FILE
         // we must start working with the MediaStore from Android Q on.
@@ -608,24 +674,27 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         contentValues.put(MediaStore.MediaColumns.MIME_TYPE, getMimetypeForEncodingType());
         Uri galleryOutputUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
 
-        InputStream fileStream = org.apache.cordova.camera.FileHelper.getInputStreamFromUriString(imageUri.toString(), cordova);
+        InputStream fileStream = org.apache.cordova.camera.FileHelper.getInputStreamFromUriString(imageUri.toString(),
+                cordova);
         writeUncompressedImage(fileStream, galleryOutputUri);
     }
 
-    private CompressFormat getCompressFormatForEncodingType(int encodingType) {
+    private CompressFormat getCompressFormatForEncodingType(int encodingType)
+    {
         return encodingType == JPEG ? CompressFormat.JPEG : CompressFormat.PNG;
     }
 
-    private GalleryPathVO getPicturesPath() {
+    private GalleryPathVO getPicturesPath()
+    {
         String timeStamp = new SimpleDateFormat(TIME_FORMAT).format(new Date());
         String imageFileName = "IMG_" + timeStamp + getExtensionForEncodingType();
-        File storageDir = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES);
+        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         storageDir.mkdirs();
         return new GalleryPathVO(storageDir.getAbsolutePath(), imageFileName);
     }
 
-    private void refreshGallery(Uri contentUri) {
+    private void refreshGallery(Uri contentUri)
+    {
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
         // Starting from Android Q, working with the ACTION_MEDIA_SCANNER_SCAN_FILE intent is deprecated
         mediaScanIntent.setData(contentUri);
@@ -636,14 +705,17 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * Converts output image format int value to string value of mime type.
      * @return String String value of mime type or empty string if mime type is not supported
      */
-    private String getMimetypeForEncodingType() {
-        if (encodingType == PNG) return PNG_MIME_TYPE;
-        if (encodingType == JPEG) return JPEG_MIME_TYPE;
+    private String getMimetypeForEncodingType()
+    {
+        if (encodingType == PNG)
+            return PNG_MIME_TYPE;
+        if (encodingType == JPEG)
+            return JPEG_MIME_TYPE;
         return "";
     }
 
-
-    private String outputModifiedBitmap(Bitmap bitmap, Uri uri, String mimeTypeOfOriginalFile) throws IOException {
+    private String outputModifiedBitmap(Bitmap bitmap, Uri uri, String mimeTypeOfOriginalFile) throws IOException
+    {
         // Some content: URIs do not map to file paths (e.g. picasa).
         String realPath = FileHelper.getRealPath(uri, this.cordova);
         String fileName = calculateModifiedBitmapOutputFileName(mimeTypeOfOriginalFile, realPath);
@@ -656,27 +728,34 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         bitmap.compress(compressFormat, this.mQuality, os);
         os.close();
 
-        if (exifData != null && this.encodingType == JPEG) {
-            try {
-                if (this.correctOrientation && this.orientationCorrected) {
+        if (exifData != null && this.encodingType == JPEG)
+        {
+            try
+            {
+                if (this.correctOrientation && this.orientationCorrected)
+                {
                     exifData.resetOrientation();
                 }
                 exifData.createOutFile(modifiedPath);
                 exifData.writeExifData();
                 exifData = null;
-            } catch (IOException e) {
+            } catch (IOException e)
+            {
                 e.printStackTrace();
             }
         }
         return modifiedPath;
     }
 
-    private String calculateModifiedBitmapOutputFileName(String mimeTypeOfOriginalFile, String realPath) {
-        if (realPath == null) {
+    private String calculateModifiedBitmapOutputFileName(String mimeTypeOfOriginalFile, String realPath)
+    {
+        if (realPath == null)
+        {
             return "modified" + getExtensionForEncodingType();
         }
         String fileName = realPath.substring(realPath.lastIndexOf('/') + 1);
-        if (getMimetypeForEncodingType().equals(mimeTypeOfOriginalFile)) {
+        if (getMimetypeForEncodingType().equals(mimeTypeOfOriginalFile))
+        {
             return fileName;
         }
         // if the picture is not a jpeg or png, (a .heic for example) when processed to a bitmap
@@ -684,10 +763,10 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         return fileName.substring(fileName.lastIndexOf(".") + 1) + getExtensionForEncodingType();
     }
 
-    private String getExtensionForEncodingType() {
+    private String getExtensionForEncodingType()
+    {
         return this.encodingType == JPEG ? JPEG_EXTENSION : PNG_EXTENSION;
     }
-
 
     /**
      * Applies all needed transformation to the image received from the gallery.
@@ -695,12 +774,16 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @param destType In which form should we return the image
      * @param intent   An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
      */
-    private void processResultFromGallery(int destType, Intent intent) {
+    private void processResultFromGallery(int destType, Intent intent)
+    {
         Uri uri = intent.getData();
-        if (uri == null) {
-            if (croppedUri != null) {
+        if (uri == null)
+        {
+            if (croppedUri != null)
+            {
                 uri = croppedUri;
-            } else {
+            } else
+            {
                 this.failPicture("null data from photo library");
                 return;
             }
@@ -713,62 +796,77 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         String finalLocation = fileLocation != null ? fileLocation : uriString;
         String mimeTypeOfGalleryFile = FileHelper.getMimeType(uriString, this.cordova);
 
-        if (finalLocation == null) {
+        if (finalLocation == null)
+        {
             this.failPicture("Error retrieving result.");
-        } else {
+        } else
+        {
             // If you ask for video or the selected file cannot be processed
             // there will be no attempt to resize any returned data.
-            if (this.mediaType == VIDEO  || !isImageMimeTypeProcessable(mimeTypeOfGalleryFile)) {
+            if (this.mediaType == VIDEO || !isImageMimeTypeProcessable(mimeTypeOfGalleryFile))
+            {
                 this.callbackContext.success(finalLocation);
-            } else {
+            } else
+            {
 
                 // This is a special case to just return the path as no scaling,
                 // rotating, nor compressing needs to be done
-                if (this.targetHeight == -1 && this.targetWidth == -1 &&
-                        destType == FILE_URI && !this.correctOrientation &&
-                        getMimetypeForEncodingType().equalsIgnoreCase(mimeTypeOfGalleryFile))
+                if (this.targetHeight == -1 && this.targetWidth == -1 && destType == FILE_URI
+                        && !this.correctOrientation
+                        && getMimetypeForEncodingType().equalsIgnoreCase(mimeTypeOfGalleryFile))
                 {
                     this.callbackContext.success(finalLocation);
-                } else {
+                } else
+                {
                     Bitmap bitmap = null;
-                    try {
+                    try
+                    {
                         bitmap = getScaledAndRotatedBitmap(uriString);
-                    } catch (IOException e) {
+                    } catch (IOException e)
+                    {
                         e.printStackTrace();
                     }
-                    if (bitmap == null) {
+                    if (bitmap == null)
+                    {
                         LOG.d(LOG_TAG, "I either have a null image path or bitmap");
                         this.failPicture("Unable to create bitmap!");
                         return;
                     }
 
                     // If sending base64 image back
-                    if (destType == DATA_URL) {
+                    if (destType == DATA_URL)
+                    {
                         this.processPicture(bitmap, this.encodingType);
                     }
 
                     // If sending filename back
-                    else if (destType == FILE_URI) {
+                    else if (destType == FILE_URI)
+                    {
                         // Did we modify the image?
-                        if ( (this.targetHeight > 0 && this.targetWidth > 0) ||
-                                (this.correctOrientation && this.orientationCorrected) ||
-                                !mimeTypeOfGalleryFile.equalsIgnoreCase(getMimetypeForEncodingType()))
+                        if ((this.targetHeight > 0 && this.targetWidth > 0)
+                                || (this.correctOrientation && this.orientationCorrected)
+                                || !mimeTypeOfGalleryFile.equalsIgnoreCase(getMimetypeForEncodingType()))
                         {
-                            try {
+                            try
+                            {
                                 String modifiedPath = this.outputModifiedBitmap(bitmap, uri, mimeTypeOfGalleryFile);
                                 // The modified image is cached by the app in order to get around this and not have to delete you
                                 // application cache I'm adding the current system time to the end of the file url.
-                                this.callbackContext.success("file://" + modifiedPath + "?" + System.currentTimeMillis());
+                                this.callbackContext
+                                        .success("file://" + modifiedPath + "?" + System.currentTimeMillis());
 
-                            } catch (Exception e) {
+                            } catch (Exception e)
+                            {
                                 e.printStackTrace();
-                                this.failPicture("Error retrieving image: "+e.getLocalizedMessage());
+                                this.failPicture("Error retrieving image: " + e.getLocalizedMessage());
                             }
-                        } else {
+                        } else
+                        {
                             this.callbackContext.success(finalLocation);
                         }
                     }
-                    if (bitmap != null) {
+                    if (bitmap != null)
+                    {
                         bitmap.recycle();
                         bitmap = null;
                     }
@@ -786,7 +884,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @param mimeType The mimeType to check
      * @return if the mimeType is a processable image mime type
      */
-    private boolean isImageMimeTypeProcessable(String mimeType) {
+    private boolean isImageMimeTypeProcessable(String mimeType)
+    {
         return JPEG_MIME_TYPE.equalsIgnoreCase(mimeType) || PNG_MIME_TYPE.equalsIgnoreCase(mimeType)
                 || HEIC_MIME_TYPE.equalsIgnoreCase(mimeType);
     }
@@ -799,91 +898,117 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @param resultCode  The integer result code returned by the child activity through its setResult().
      * @param intent      An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
      */
-    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+    public void onActivityResult(int requestCode, int resultCode, Intent intent)
+    {
 
         // Get src and dest types from request code for a Camera Activity
         int srcType = (requestCode / 16) - 1;
         int destType = (requestCode % 16) - 1;
 
         // If Camera Crop
-        if (requestCode >= CROP_CAMERA) {
-            if (resultCode == Activity.RESULT_OK) {
+        if (requestCode >= CROP_CAMERA)
+        {
+            if (resultCode == Activity.RESULT_OK)
+            {
 
                 // Because of the inability to pass through multiple intents, this hack will allow us
                 // to pass arcane codes back.
                 destType = requestCode - CROP_CAMERA;
-                try {
+                try
+                {
                     processResultFromCamera(destType, intent);
-                } catch (IOException e) {
+                } catch (IOException e)
+                {
                     e.printStackTrace();
                     LOG.e(LOG_TAG, "Unable to write to file");
                 }
 
-            }// If cancelled
-            else if (resultCode == Activity.RESULT_CANCELED) {
+            } // If cancelled
+            else if (resultCode == Activity.RESULT_CANCELED)
+            {
                 this.failPicture("No Image Selected");
             }
 
             // If something else
-            else {
+            else
+            {
                 this.failPicture("Did not complete!");
             }
         }
         // If CAMERA
-        else if (srcType == CAMERA) {
+        else if (srcType == CAMERA)
+        {
             // If image available
-            if (resultCode == Activity.RESULT_OK) {
-                try {
-                    if (this.allowEdit) {
+            if (resultCode == Activity.RESULT_OK)
+            {
+                try
+                {
+                    if (this.allowEdit)
+                    {
                         Uri tmpFile = FileProvider.getUriForFile(cordova.getActivity(),
                                 applicationId + ".cordova.plugin.camera.provider",
                                 createCaptureFile(this.encodingType));
                         performCrop(tmpFile, destType, intent);
-                    } else {
+                    } else
+                    {
                         this.processResultFromCamera(destType, intent);
                     }
-                } catch (IOException e) {
+                } catch (IOException e)
+                {
                     e.printStackTrace();
-                    this.failPicture("Error capturing image: "+e.getLocalizedMessage());
+                    this.failPicture("Error capturing image: " + e.getLocalizedMessage());
                 }
             }
 
             // If cancelled
-            else if (resultCode == Activity.RESULT_CANCELED) {
+            else if (resultCode == Activity.RESULT_CANCELED)
+            {
                 this.failPicture("No Image Selected");
             }
 
             // If something else
-            else {
+            else
+            {
                 this.failPicture("Did not complete!");
             }
         }
         // If retrieving photo from library
-        else if ((srcType == PHOTOLIBRARY) || (srcType == SAVEDPHOTOALBUM)) {
-            if (resultCode == Activity.RESULT_OK && intent != null) {
+        else if ((srcType == PHOTOLIBRARY) || (srcType == SAVEDPHOTOALBUM))
+        {
+            if (resultCode == Activity.RESULT_OK && intent != null)
+            {
                 final Intent i = intent;
                 final int finalDestType = destType;
-                cordova.getThreadPool().execute(new Runnable() {
-                    public void run() {
+                cordova.getThreadPool().execute(new Runnable()
+                {
+                    public void run()
+                    {
                         processResultFromGallery(finalDestType, i);
                     }
                 });
-            } else if (resultCode == Activity.RESULT_CANCELED) {
+            } else if (resultCode == Activity.RESULT_CANCELED)
+            {
                 this.failPicture("No Image Selected");
-            } else {
+            } else
+            {
                 this.failPicture("Selection did not complete!");
             }
         }
     }
 
-    private int exifToDegrees(int exifOrientation) {
-        if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) {
+    private int exifToDegrees(int exifOrientation)
+    {
+        if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90)
+        {
             return 90;
-        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {
+        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180)
+        {
             return 180;
-        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {
+        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270)
+        {
             return 270;
-        } else {
+        } else
+        {
             return 0;
         }
     }
@@ -896,34 +1021,44 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @throws FileNotFoundException
      * @throws IOException
      */
-    private void writeUncompressedImage(InputStream fis, Uri dest) throws FileNotFoundException,
-            IOException {
+    private void writeUncompressedImage(InputStream fis, Uri dest) throws FileNotFoundException, IOException
+    {
         OutputStream os = null;
-        try {
+        try
+        {
             os = this.cordova.getActivity().getContentResolver().openOutputStream(dest);
             byte[] buffer = new byte[4096];
             int len;
-            while ((len = fis.read(buffer)) != -1) {
+            while ((len = fis.read(buffer)) != -1)
+            {
                 os.write(buffer, 0, len);
             }
             os.flush();
-        } finally {
-            if (os != null) {
-                try {
+        } finally
+        {
+            if (os != null)
+            {
+                try
+                {
                     os.close();
-                } catch (IOException e) {
+                } catch (IOException e)
+                {
                     LOG.d(LOG_TAG, "Exception while closing output stream.");
                 }
             }
-            if (fis != null) {
-                try {
+            if (fis != null)
+            {
+                try
+                {
                     fis.close();
-                } catch (IOException e) {
+                } catch (IOException e)
+                {
                     LOG.d(LOG_TAG, "Exception while closing file input stream.");
                 }
             }
         }
     }
+
     /**
      * In the special case where the default width, height and quality are unchanged
      * we just write the file out to disk saving the expensive Bitmap.compress function.
@@ -932,8 +1067,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @throws FileNotFoundException
      * @throws IOException
      */
-    private void writeUncompressedImage(Uri src, Uri dest) throws FileNotFoundException,
-            IOException {
+    private void writeUncompressedImage(Uri src, Uri dest) throws FileNotFoundException, IOException
+    {
 
         InputStream fis = FileHelper.getInputStreamFromUriString(src.toString(), cordova);
         writeUncompressedImage(fis, dest);
@@ -947,24 +1082,32 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @return
      * @throws IOException
      */
-    private Bitmap getScaledAndRotatedBitmap(String imageUrl) throws IOException {
+    private Bitmap getScaledAndRotatedBitmap(String imageUrl) throws IOException
+    {
         // If no new width or height were specified, and orientation is not needed return the original bitmap
-        if (this.targetWidth <= 0 && this.targetHeight <= 0 && !(this.correctOrientation)) {
+        if (this.targetWidth <= 0 && this.targetHeight <= 0 && !(this.correctOrientation))
+        {
             InputStream fileStream = null;
             Bitmap image = null;
-            try {
+            try
+            {
                 fileStream = FileHelper.getInputStreamFromUriString(imageUrl, cordova);
                 image = BitmapFactory.decodeStream(fileStream);
-            }  catch (OutOfMemoryError e) {
+            } catch (OutOfMemoryError e)
+            {
                 callbackContext.error(e.getLocalizedMessage());
-            } catch (Exception e){
+            } catch (Exception e)
+            {
                 callbackContext.error(e.getLocalizedMessage());
-            }
-            finally {
-                if (fileStream != null) {
-                    try {
+            } finally
+            {
+                if (fileStream != null)
+                {
+                    try
+                    {
                         fileStream.close();
-                    } catch (IOException e) {
+                    } catch (IOException e)
+                    {
                         LOG.d(LOG_TAG, "Exception while closing file input stream.");
                     }
                 }
@@ -972,29 +1115,32 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             return image;
         }
 
-
         /*  Copy the inputstream to a temporary file on the device.
             We then use this temporary file to determine the width/height/orientation.
             This is the only way to determine the orientation of the photo coming from 3rd party providers (Google Drive, Dropbox,etc)
             This also ensures we create a scaled bitmap with the correct orientation
-
+        
              We delete the temporary file once we are done
          */
         File localFile = null;
         Uri galleryUri = null;
         int rotate = 0;
-        try {
+        try
+        {
             InputStream fileStream = FileHelper.getInputStreamFromUriString(imageUrl, cordova);
-            if (fileStream != null) {
+            if (fileStream != null)
+            {
                 // Generate a temporary file
                 String timeStamp = new SimpleDateFormat(TIME_FORMAT).format(new Date());
                 String fileName = "IMG_" + timeStamp + (getExtensionForEncodingType());
                 localFile = new File(getTempDirectoryPath() + fileName);
                 galleryUri = Uri.fromFile(localFile);
                 writeUncompressedImage(fileStream, galleryUri);
-                try {
+                try
+                {
                     String mimeType = FileHelper.getMimeType(imageUrl.toString(), cordova);
-                    if (JPEG_MIME_TYPE.equalsIgnoreCase(mimeType)) {
+                    if (JPEG_MIME_TYPE.equalsIgnoreCase(mimeType))
+                    {
                         //  ExifInterface doesn't like the file:// prefix
                         String filePath = galleryUri.toString().replace("file://", "");
                         // read exifData of source
@@ -1002,59 +1148,72 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                         exifData.createInFile(filePath);
                         exifData.readExifData();
                         // Use ExifInterface to pull rotation information
-                        if (this.correctOrientation) {
+                        if (this.correctOrientation)
+                        {
                             ExifInterface exif = new ExifInterface(filePath);
-                            rotate = exifToDegrees(exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED));
+                            rotate = exifToDegrees(exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                                    ExifInterface.ORIENTATION_UNDEFINED));
                         }
                     }
-                } catch (Exception oe) {
-                    LOG.w(LOG_TAG,"Unable to read Exif data: "+ oe.toString());
+                } catch (Exception oe)
+                {
+                    LOG.w(LOG_TAG, "Unable to read Exif data: " + oe.toString());
                     rotate = 0;
                 }
             }
-        } catch (Exception e) {
-            LOG.e(LOG_TAG,"Exception while getting input stream: "+ e.toString());
+        } catch (Exception e)
+        {
+            LOG.e(LOG_TAG, "Exception while getting input stream: " + e.toString());
             return null;
         }
 
-        try {
+        try
+        {
             // figure out the original width and height of the image
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inJustDecodeBounds = true;
             InputStream fileStream = null;
-            try {
+            try
+            {
                 fileStream = FileHelper.getInputStreamFromUriString(galleryUri.toString(), cordova);
                 BitmapFactory.decodeStream(fileStream, null, options);
-            } finally {
-                if (fileStream != null) {
-                    try {
+            } finally
+            {
+                if (fileStream != null)
+                {
+                    try
+                    {
                         fileStream.close();
-                    } catch (IOException e) {
+                    } catch (IOException e)
+                    {
                         LOG.d(LOG_TAG, "Exception while closing file input stream.");
                     }
                 }
             }
 
-
             //CB-2292: WTF? Why is the width null?
-            if (options.outWidth == 0 || options.outHeight == 0) {
+            if (options.outWidth == 0 || options.outHeight == 0)
+            {
                 return null;
             }
 
             // User didn't specify output dimensions, but they need orientation
-            if (this.targetWidth <= 0 && this.targetHeight <= 0) {
+            if (this.targetWidth <= 0 && this.targetHeight <= 0)
+            {
                 this.targetWidth = options.outWidth;
                 this.targetHeight = options.outHeight;
             }
 
             // Setup target width/height based on orientation
             int rotatedWidth, rotatedHeight;
-            boolean rotated= false;
-            if (rotate == 90 || rotate == 270) {
+            boolean rotated = false;
+            if (rotate == 90 || rotate == 270)
+            {
                 rotatedWidth = options.outHeight;
                 rotatedHeight = options.outWidth;
                 rotated = true;
-            } else {
+            } else
+            {
                 rotatedWidth = options.outWidth;
                 rotatedHeight = options.outHeight;
             }
@@ -1064,21 +1223,27 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
             // Load in the smallest bitmap possible that is closest to the size we want
             options.inJustDecodeBounds = false;
-            options.inSampleSize = calculateSampleSize(rotatedWidth, rotatedHeight,  widthHeight[0], widthHeight[1]);
+            options.inSampleSize = calculateSampleSize(rotatedWidth, rotatedHeight, widthHeight[0], widthHeight[1]);
             Bitmap unscaledBitmap = null;
-            try {
+            try
+            {
                 fileStream = FileHelper.getInputStreamFromUriString(galleryUri.toString(), cordova);
                 unscaledBitmap = BitmapFactory.decodeStream(fileStream, null, options);
-            } finally {
-                if (fileStream != null) {
-                    try {
+            } finally
+            {
+                if (fileStream != null)
+                {
+                    try
+                    {
                         fileStream.close();
-                    } catch (IOException e) {
+                    } catch (IOException e)
+                    {
                         LOG.d(LOG_TAG, "Exception while closing file input stream.");
                     }
                 }
             }
-            if (unscaledBitmap == null) {
+            if (unscaledBitmap == null)
+            {
                 return null;
             }
 
@@ -1086,24 +1251,31 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             int scaledHeight = (!rotated) ? widthHeight[1] : widthHeight[0];
 
             Bitmap scaledBitmap = Bitmap.createScaledBitmap(unscaledBitmap, scaledWidth, scaledHeight, true);
-            if (scaledBitmap != unscaledBitmap) {
+            if (scaledBitmap != unscaledBitmap)
+            {
                 unscaledBitmap.recycle();
                 unscaledBitmap = null;
             }
-            if (this.correctOrientation && (rotate != 0)) {
+            if (this.correctOrientation && (rotate != 0))
+            {
                 Matrix matrix = new Matrix();
                 matrix.setRotate(rotate);
-                try {
-                    scaledBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix, true);
+                try
+                {
+                    scaledBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(),
+                            scaledBitmap.getHeight(), matrix, true);
                     this.orientationCorrected = true;
-                } catch (OutOfMemoryError oom) {
+                } catch (OutOfMemoryError oom)
+                {
                     this.orientationCorrected = false;
                 }
             }
             return scaledBitmap;
-        } finally {
+        } finally
+        {
             // delete the temporary copy
-            if (localFile != null) {
+            if (localFile != null)
+            {
                 localFile.delete();
             }
         }
@@ -1117,22 +1289,26 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @param origHeight
      * @return
      */
-    public int[] calculateAspectRatio(int origWidth, int origHeight) {
+    public int[] calculateAspectRatio(int origWidth, int origHeight)
+    {
         int newWidth = this.targetWidth;
         int newHeight = this.targetHeight;
 
         // If no new width or height were specified return the original bitmap
-        if (newWidth <= 0 && newHeight <= 0) {
+        if (newWidth <= 0 && newHeight <= 0)
+        {
             newWidth = origWidth;
             newHeight = origHeight;
         }
         // Only the width was specified
-        else if (newWidth > 0 && newHeight <= 0) {
-            newHeight = (int)((double)(newWidth / (double)origWidth) * origHeight);
+        else if (newWidth > 0 && newHeight <= 0)
+        {
+            newHeight = (int) ((double) (newWidth / (double) origWidth) * origHeight);
         }
         // only the height was specified
-        else if (newWidth <= 0 && newHeight > 0) {
-            newWidth = (int)((double)(newHeight / (double)origHeight) * origWidth);
+        else if (newWidth <= 0 && newHeight > 0)
+        {
+            newWidth = (int) ((double) (newHeight / (double) origHeight) * origWidth);
         }
         // If the user specified both a positive width and height
         // (potentially different aspect ratio) then the width or height is
@@ -1140,13 +1316,16 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         // Alternatively, the specified width and height could have been
         // kept and Bitmap.SCALE_TO_FIT specified when scaling, but this
         // would result in whitespace in the new image.
-        else {
+        else
+        {
             double newRatio = newWidth / (double) newHeight;
             double origRatio = origWidth / (double) origHeight;
 
-            if (origRatio > newRatio) {
+            if (origRatio > newRatio)
+            {
                 newHeight = (newWidth * origHeight) / origWidth;
-            } else if (origRatio < newRatio) {
+            } else if (origRatio < newRatio)
+            {
                 newWidth = (newHeight * origWidth) / origHeight;
             }
         }
@@ -1167,13 +1346,16 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @param dstHeight
      * @return
      */
-    public static int calculateSampleSize(int srcWidth, int srcHeight, int dstWidth, int dstHeight) {
+    public static int calculateSampleSize(int srcWidth, int srcHeight, int dstWidth, int dstHeight)
+    {
         final float srcAspect = (float) srcWidth / (float) srcHeight;
         final float dstAspect = (float) dstWidth / (float) dstHeight;
 
-        if (srcAspect > dstAspect) {
+        if (srcAspect > dstAspect)
+        {
             return srcWidth / dstWidth;
-        } else {
+        } else
+        {
             return srcHeight / dstHeight;
         }
     }
@@ -1183,13 +1365,10 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      *
      * @return a cursor
      */
-    private Cursor queryImgDB(Uri contentStore) {
-        return this.cordova.getActivity().getContentResolver().query(
-                contentStore,
-                new String[]{MediaStore.Images.Media._ID},
-                null,
-                null,
-                null);
+    private Cursor queryImgDB(Uri contentStore)
+    {
+        return this.cordova.getActivity().getContentResolver().query(contentStore,
+                new String[]{MediaStore.Images.Media._ID}, null, null, null);
     }
 
     /**
@@ -1197,8 +1376,10 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      *
      * @param newImage
      */
-    private void cleanup(int imageType, Uri oldImage, Uri newImage, Bitmap bitmap) {
-        if (bitmap != null) {
+    private void cleanup(int imageType, Uri oldImage, Uri newImage, Bitmap bitmap)
+    {
+        if (bitmap != null)
+        {
             bitmap.recycle();
         }
 
@@ -1207,7 +1388,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
         checkForDuplicateImage(imageType);
         // Scan for the gallery to update pic refs in gallery
-        if (this.saveToPhotoAlbum && newImage != null) {
+        if (this.saveToPhotoAlbum && newImage != null)
+        {
             this.scanForGallery(newImage);
         }
 
@@ -1221,21 +1403,25 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      *
      * @param type FILE_URI or DATA_URL
      */
-    private void checkForDuplicateImage(int type) {
+    private void checkForDuplicateImage(int type)
+    {
         int diff = 1;
         Uri contentStore = whichContentStore();
         Cursor cursor = queryImgDB(contentStore);
         int currentNumOfImages = cursor.getCount();
 
-        if (type == FILE_URI && this.saveToPhotoAlbum) {
+        if (type == FILE_URI && this.saveToPhotoAlbum)
+        {
             diff = 2;
         }
 
         // delete the duplicate file if the difference is 2 for file URI or 1 for Data URL
-        if ((currentNumOfImages - numPics) == diff) {
+        if ((currentNumOfImages - numPics) == diff)
+        {
             cursor.moveToLast();
             int id = Integer.valueOf(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media._ID)));
-            if (diff == 2) {
+            if (diff == 2)
+            {
                 id--;
             }
             Uri uri = Uri.parse(contentStore + "/" + id);
@@ -1249,10 +1435,13 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      *
      * @return Uri
      */
-    private Uri whichContentStore() {
-        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+    private Uri whichContentStore()
+    {
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED))
+        {
             return MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        } else {
+        } else
+        {
             return MediaStore.Images.Media.INTERNAL_CONTENT_URI;
         }
     }
@@ -1262,12 +1451,15 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      *
      * @param bitmap
      */
-    public void processPicture(Bitmap bitmap, int encodingType) {
+    public void processPicture(Bitmap bitmap, int encodingType)
+    {
         ByteArrayOutputStream jpeg_data = new ByteArrayOutputStream();
         CompressFormat compressFormat = getCompressFormatForEncodingType(encodingType);
 
-        try {
-            if (bitmap.compress(compressFormat, mQuality, jpeg_data)) {
+        try
+        {
+            if (bitmap.compress(compressFormat, mQuality, jpeg_data))
+            {
                 byte[] code = jpeg_data.toByteArray();
                 byte[] output = Base64.encode(code, Base64.NO_WRAP);
                 String js_out = new String(output);
@@ -1276,8 +1468,9 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 output = null;
                 code = null;
             }
-        } catch (Exception e) {
-            this.failPicture("Error compressing image: "+e.getLocalizedMessage());
+        } catch (Exception e)
+        {
+            this.failPicture("Error compressing image: " + e.getLocalizedMessage());
         }
         jpeg_data = null;
     }
@@ -1287,41 +1480,52 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      *
      * @param err
      */
-    public void failPicture(String err) {
+    public void failPicture(String err)
+    {
         this.callbackContext.error(err);
     }
 
-    private void scanForGallery(Uri newImage) {
+    private void scanForGallery(Uri newImage)
+    {
         this.scanMe = newImage;
-        if (this.conn != null) {
+        if (this.conn != null)
+        {
             this.conn.disconnect();
         }
         this.conn = new MediaScannerConnection(this.cordova.getActivity().getApplicationContext(), this);
         conn.connect();
     }
 
-    public void onMediaScannerConnected() {
-        try {
+    public void onMediaScannerConnected()
+    {
+        try
+        {
             this.conn.scanFile(this.scanMe.toString(), "image/*");
-        } catch (IllegalStateException e) {
+        } catch (IllegalStateException e)
+        {
             LOG.e(LOG_TAG, "Can't scan file in MediaScanner after taking picture");
         }
 
     }
 
-    public void onScanCompleted(String path, Uri uri) {
+    public void onScanCompleted(String path, Uri uri)
+    {
         this.conn.disconnect();
     }
 
-    public void onRequestPermissionResult(int requestCode, String[] permissions,
-                                          int[] grantResults) {
-        for (int r : grantResults) {
-            if (r == PackageManager.PERMISSION_DENIED) {
-                this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, PERMISSION_DENIED_ERROR));
+    public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults)
+    {
+        for (int r : grantResults)
+        {
+            if (r == PackageManager.PERMISSION_DENIED)
+            {
+                this.callbackContext
+                        .sendPluginResult(new PluginResult(PluginResult.Status.ERROR, PERMISSION_DENIED_ERROR));
                 return;
             }
         }
-        switch (requestCode) {
+        switch (requestCode)
+        {
             case TAKE_PIC_SEC:
                 takePicture(this.destType, this.encodingType);
                 break;
@@ -1336,7 +1540,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * save/restore APIs to handle the case where the CordovaActivity is killed by the OS
      * before we get the launched Activity's result.
      */
-    public Bundle onSaveInstanceState() {
+    public Bundle onSaveInstanceState()
+    {
         Bundle state = new Bundle();
         state.putInt("destType", this.destType);
         state.putInt("srcType", this.srcType);
@@ -1350,22 +1555,26 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         state.putBoolean("correctOrientation", this.correctOrientation);
         state.putBoolean("saveToPhotoAlbum", this.saveToPhotoAlbum);
 
-        if (this.croppedUri != null) {
+        if (this.croppedUri != null)
+        {
             state.putString(CROPPED_URI_KEY, this.croppedFilePath);
         }
 
-        if (this.imageUri != null) {
+        if (this.imageUri != null)
+        {
             state.putString(IMAGE_URI_KEY, this.imageFilePath);
         }
 
-        if (this.imageFilePath != null) {
+        if (this.imageFilePath != null)
+        {
             state.putString(IMAGE_FILE_PATH_KEY, this.imageFilePath);
         }
 
         return state;
     }
 
-    public void onRestoreStateForActivityResult(Bundle state, CallbackContext callbackContext) {
+    public void onRestoreStateForActivityResult(Bundle state, CallbackContext callbackContext)
+    {
         this.destType = state.getInt("destType");
         this.srcType = state.getInt("srcType");
         this.mQuality = state.getInt("mQuality");
@@ -1378,16 +1587,19 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         this.correctOrientation = state.getBoolean("correctOrientation");
         this.saveToPhotoAlbum = state.getBoolean("saveToPhotoAlbum");
 
-        if (state.containsKey(CROPPED_URI_KEY)) {
+        if (state.containsKey(CROPPED_URI_KEY))
+        {
             this.croppedUri = Uri.parse(state.getString(CROPPED_URI_KEY));
         }
 
-        if (state.containsKey(IMAGE_URI_KEY)) {
+        if (state.containsKey(IMAGE_URI_KEY))
+        {
             //I have no idea what type of URI is being passed in
             this.imageUri = Uri.parse(state.getString(IMAGE_URI_KEY));
         }
 
-        if (state.containsKey(IMAGE_FILE_PATH_KEY)) {
+        if (state.containsKey(IMAGE_FILE_PATH_KEY))
+        {
             this.imageFilePath = state.getString(IMAGE_FILE_PATH_KEY);
         }
 

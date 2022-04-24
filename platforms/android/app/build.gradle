@@ -109,6 +109,7 @@ ext {
 }
 
 // PLUGIN GRADLE EXTENSIONS START
+apply from: "../com.booway.compass/cordovaDemo-compass_build.gradle"
 // PLUGIN GRADLE EXTENSIONS END
 
 def hasBuildExtras1 = file('build-extras.gradle').exists()
@@ -254,10 +255,10 @@ android {
         signingConfigs {
             release {
                 // These must be set or Gradle will complain (even if they are overridden).
-                keyAlias = ""
-                keyPassword = ""
-                storeFile = null
-                storePassword = ""
+                keyAlias = "cordovademo"
+                keyPassword = "123456"
+                storeFile file('../key.keystore')
+                storePassword = "123456"
             }
         }
         buildTypes {
@@ -291,11 +292,12 @@ dependencies {
     if (cordovaConfig.IS_GRADLE_PLUGIN_KOTLIN_ENABLED) {
         implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${cordovaConfig.KOTLIN_VERSION}"
     }
-
     // SUB-PROJECT DEPENDENCIES START
     implementation(project(path: ":CordovaLib"))
     implementation "androidx.core:core:1.6.+"
     // SUB-PROJECT DEPENDENCIES END
+    implementation "com.amap.api:3dmap:9.2.0"
+    implementation "com.amap.api:location:latest.integration"
 }
 
 def addSigningProps(propsFilePath, signingConfig) {

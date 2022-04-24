@@ -16,26 +16,26 @@
  */
 package org.apache.cordova.camera;
 
-import android.annotation.SuppressLint;
-import android.content.ContentUris;
-import android.content.Context;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Environment;
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
-import android.webkit.MimeTypeMap;
-
-import org.apache.cordova.CordovaInterface;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
 
-public class FileHelper {
+import org.apache.cordova.CordovaInterface;
+
+import android.annotation.SuppressLint;
+import android.content.ContentUris;
+import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
+import android.webkit.MimeTypeMap;
+
+public class FileHelper
+{
     private static final String LOG_TAG = "FileUtils";
     private static final String _DATA = "_data";
 
@@ -48,7 +48,8 @@ public class FileHelper {
      * @return the full path to the file
      */
     @SuppressWarnings("deprecation")
-    public static String getRealPath(Uri uri, CordovaInterface cordova) {
+    public static String getRealPath(Uri uri, CordovaInterface cordova)
+    {
         return FileHelper.getRealPathFromURI(cordova.getActivity(), uri);
     }
 
@@ -60,72 +61,86 @@ public class FileHelper {
      * @param cordova the current application context
      * @return the full path to the file
      */
-    public static String getRealPath(String uriString, CordovaInterface cordova) {
+    public static String getRealPath(String uriString, CordovaInterface cordova)
+    {
         return FileHelper.getRealPath(Uri.parse(uriString), cordova);
     }
 
     @SuppressLint("NewApi")
-    public static String getRealPathFromURI(final Context context, final Uri uri) {
+    public static String getRealPathFromURI(final Context context, final Uri uri)
+    {
         // DocumentProvider
-        if (DocumentsContract.isDocumentUri(context, uri)) {
+        if (DocumentsContract.isDocumentUri(context, uri))
+        {
 
             // ExternalStorageProvider
-            if (isExternalStorageDocument(uri)) {
+            if (isExternalStorageDocument(uri))
+            {
                 final String docId = DocumentsContract.getDocumentId(uri);
                 final String[] split = docId.split(":");
                 final String type = split[0];
 
-                if ("primary".equalsIgnoreCase(type)) {
+                if ("primary".equalsIgnoreCase(type))
+                {
                     return Environment.getExternalStorageDirectory() + "/" + split[1];
                 }
 
                 // TODO handle non-primary volumes
             }
             // DownloadsProvider
-            else if (isDownloadsDocument(uri)) {
+            else if (isDownloadsDocument(uri))
+            {
 
                 final String id = DocumentsContract.getDocumentId(uri);
-                if (id != null && id.length() > 0) {
-                    if (id.startsWith("raw:")) {
+                if (id != null && id.length() > 0)
+                {
+                    if (id.startsWith("raw:"))
+                    {
                         return id.replaceFirst("raw:", "");
                     }
-                    try {
-                        final Uri contentUri = ContentUris.withAppendedId(
-                                Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+                    try
+                    {
+                        final Uri contentUri = ContentUris
+                                .withAppendedId(Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
 
                         return getDataColumn(context, contentUri, null, null);
-                    } catch (NumberFormatException e) {
+                    } catch (NumberFormatException e)
+                    {
                         return null;
                     }
-                } else {
+                } else
+                {
                     return null;
                 }
             }
             // MediaProvider
-            else if (isMediaDocument(uri)) {
+            else if (isMediaDocument(uri))
+            {
                 final String docId = DocumentsContract.getDocumentId(uri);
                 final String[] split = docId.split(":");
                 final String type = split[0];
 
                 Uri contentUri = null;
-                if ("image".equals(type)) {
+                if ("image".equals(type))
+                {
                     contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-                } else if ("video".equals(type)) {
+                } else if ("video".equals(type))
+                {
                     contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-                } else if ("audio".equals(type)) {
+                } else if ("audio".equals(type))
+                {
                     contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
                 }
 
                 final String selection = "_id=?";
-                final String[] selectionArgs = new String[] {
-                        split[1]
-                };
+                final String[] selectionArgs = new String[]{split[1]};
 
                 return getDataColumn(context, contentUri, selection, selectionArgs);
             }
         }
         // MediaStore (and general)
-        else if ("content".equalsIgnoreCase(uri.getScheme())) {
+        else if ("content".equalsIgnoreCase(uri.getScheme()))
+        {
 
             // Return the remote address
             if (isGooglePhotosUri(uri))
@@ -137,7 +152,8 @@ public class FileHelper {
             return getDataColumn(context, uri, null, null);
         }
         // File
-        else if ("file".equalsIgnoreCase(uri.getScheme())) {
+        else if ("file".equalsIgnoreCase(uri.getScheme()))
+        {
             return uri.getPath();
         }
 
@@ -152,34 +168,43 @@ public class FileHelper {
      * @return an input stream into the data at the given URI or null if given an invalid URI string
      * @throws IOException
      */
-    public static InputStream getInputStreamFromUriString(String uriString, CordovaInterface cordova)
-            throws IOException {
+    public static InputStream getInputStreamFromUriString(String uriString, CordovaInterface cordova) throws IOException
+    {
         InputStream returnValue = null;
-        if (uriString.startsWith("content")) {
+        if (uriString.startsWith("content"))
+        {
             Uri uri = Uri.parse(uriString);
             returnValue = cordova.getActivity().getContentResolver().openInputStream(uri);
-        } else if (uriString.startsWith("file://")) {
+        } else if (uriString.startsWith("file://"))
+        {
             int question = uriString.indexOf("?");
-            if (question > -1) {
+            if (question > -1)
+            {
                 uriString = uriString.substring(0, question);
             }
 
-            if (uriString.startsWith("file:///android_asset/")) {
+            if (uriString.startsWith("file:///android_asset/"))
+            {
                 Uri uri = Uri.parse(uriString);
                 String relativePath = uri.getPath().substring(15);
                 returnValue = cordova.getActivity().getAssets().open(relativePath);
-            } else {
+            } else
+            {
                 // might still be content so try that first
-                try {
+                try
+                {
                     returnValue = cordova.getActivity().getContentResolver().openInputStream(Uri.parse(uriString));
-                } catch (Exception e) {
+                } catch (Exception e)
+                {
                     returnValue = null;
                 }
-                if (returnValue == null) {
+                if (returnValue == null)
+                {
                     returnValue = new FileInputStream(getRealPath(uriString, cordova));
                 }
             }
-        } else {
+        } else
+        {
             returnValue = new FileInputStream(uriString);
         }
         return returnValue;
@@ -192,23 +217,28 @@ public class FileHelper {
      * @param uriString the URI string to operate on
      * @return a path without the "file://" prefix
      */
-    public static String stripFileProtocol(String uriString) {
+    public static String stripFileProtocol(String uriString)
+    {
 
-        if (uriString.startsWith("file://")) {
+        if (uriString.startsWith("file://"))
+        {
             uriString = uriString.substring(7);
         }
         return uriString;
     }
 
-    public static String getMimeTypeForExtension(String path) {
+    public static String getMimeTypeForExtension(String path)
+    {
         String extension = path;
         int lastDot = extension.lastIndexOf('.');
-        if (lastDot != -1) {
+        if (lastDot != -1)
+        {
             extension = extension.substring(lastDot + 1);
         }
         // Convert the URI string to lower case to ensure compatibility with MimeTypeMap (see CB-2185).
         extension = extension.toLowerCase(Locale.getDefault());
-        if (extension.equals("3ga")) {
+        if (extension.equals("3ga"))
+        {
             return "audio/3gpp";
         }
         return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
@@ -220,13 +250,16 @@ public class FileHelper {
      * @param uriString the URI string of the data
      * @return the mime type of the specified data
      */
-    public static String getMimeType(String uriString, CordovaInterface cordova) {
+    public static String getMimeType(String uriString, CordovaInterface cordova)
+    {
         String mimeType;
 
         Uri uri = Uri.parse(uriString);
-        if (uriString.startsWith("content://")) {
+        if (uriString.startsWith("content://"))
+        {
             mimeType = cordova.getActivity().getContentResolver().getType(uri);
-        } else {
+        } else
+        {
             mimeType = getMimeTypeForExtension(uri.getPath());
         }
 
@@ -244,26 +277,27 @@ public class FileHelper {
      * @return The value of the _data column, which is typically a file path.
      * @author paulburke
      */
-    public static String getDataColumn(Context context, Uri uri, String selection,
-                                       String[] selectionArgs) {
+    public static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs)
+    {
 
         Cursor cursor = null;
         final String column = "_data";
-        final String[] projection = {
-                column
-        };
+        final String[] projection = {column};
 
-        try {
-            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs,
-                    null);
-            if (cursor != null && cursor.moveToFirst()) {
+        try
+        {
+            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
+            if (cursor != null && cursor.moveToFirst())
+            {
 
                 final int column_index = cursor.getColumnIndexOrThrow(column);
                 return cursor.getString(column_index);
             }
-        } catch (Exception e) {
+        } catch (Exception e)
+        {
             return null;
-        } finally {
+        } finally
+        {
             if (cursor != null)
                 cursor.close();
         }
@@ -275,7 +309,8 @@ public class FileHelper {
      * @return Whether the Uri authority is ExternalStorageProvider.
      * @author paulburke
      */
-    public static boolean isExternalStorageDocument(Uri uri) {
+    public static boolean isExternalStorageDocument(Uri uri)
+    {
         return "com.android.externalstorage.documents".equals(uri.getAuthority());
     }
 
@@ -284,7 +319,8 @@ public class FileHelper {
      * @return Whether the Uri authority is DownloadsProvider.
      * @author paulburke
      */
-    public static boolean isDownloadsDocument(Uri uri) {
+    public static boolean isDownloadsDocument(Uri uri)
+    {
         return "com.android.providers.downloads.documents".equals(uri.getAuthority());
     }
 
@@ -293,7 +329,8 @@ public class FileHelper {
      * @return Whether the Uri authority is MediaProvider.
      * @author paulburke
      */
-    public static boolean isMediaDocument(Uri uri) {
+    public static boolean isMediaDocument(Uri uri)
+    {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
 
@@ -301,7 +338,8 @@ public class FileHelper {
      * @param uri The Uri to check.
      * @return Whether the Uri authority is Google Photos.
      */
-    public static boolean isGooglePhotosUri(Uri uri) {
+    public static boolean isGooglePhotosUri(Uri uri)
+    {
         return "com.google.android.apps.photos.content".equals(uri.getAuthority());
     }
 
@@ -310,7 +348,8 @@ public class FileHelper {
      * @param uri The Uri is checked by functions
      * @return Whether the Uri authority is FileProvider
      */
-    public static boolean isFileProviderUri(final Context context, final Uri uri) {
+    public static boolean isFileProviderUri(final Context context, final Uri uri)
+    {
         final String packageName = context.getPackageName();
         final String authority = new StringBuilder(packageName).append(".provider").toString();
         return authority.equals(uri.getAuthority());
@@ -325,7 +364,7 @@ public class FileHelper {
     {
         final File appDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         final File file = new File(appDir, uri.getLastPathSegment());
-        return file.exists() ? file.toString(): null;
+        return file.exists() ? file.toString() : null;
     }
 
 }

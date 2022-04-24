@@ -43,6 +43,10 @@
             {
               "xml": "<feature name=\"NetworkStatus\"><param name=\"android-package\" value=\"org.apache.cordova.networkinformation.NetworkManager\" /></feature>",
               "count": 1
+            },
+            {
+              "xml": "<feature name=\"Compass\"><param name=\"android-package\" value=\"com.booway.compass.Compass\" /></feature>",
+              "count": 1
             }
           ]
         }
@@ -68,6 +72,12 @@
               "xml": "<provider android:authorities=\"${applicationId}.cordova.plugin.camera.provider\" android:exported=\"false\" android:grantUriPermissions=\"true\" android:name=\"org.apache.cordova.camera.FileProvider\"><meta-data android:name=\"android.support.FILE_PROVIDER_PATHS\" android:resource=\"@xml/camera_provider_paths\" /></provider>",
               "count": 1
             }
+          ],
+          "/manifest/application": [
+            {
+              "xml": "<activity android:name=\"com.booway.compass.CompassActivity\" />",
+              "count": 1
+            }
           ]
         }
       }
@@ -85,6 +95,9 @@
       "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
     },
     "cordova-plugin-network-information": {
+      "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
+    },
+    "com.booway.compass": {
       "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
     }
   },
@@ -153,12 +166,21 @@
       "clobbers": [
         "Connection"
       ]
+    },
+    {
+      "id": "com.booway.compass.Compass",
+      "file": "plugins/com.booway.compass/www/Compass.js",
+      "pluginId": "com.booway.compass",
+      "clobbers": [
+        "Compass"
+      ]
     }
   ],
   "plugin_metadata": {
     "com.booway.sqlitehelper": "0.0.1",
     "cordova-plugin-camera": "6.0.0",
     "cordova-plugin-inappbrowser": "5.0.0",
-    "cordova-plugin-network-information": "3.0.0"
+    "cordova-plugin-network-information": "3.0.0",
+    "com.booway.compass": "0.0.2"
   }
 }

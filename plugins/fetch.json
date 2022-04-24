@@ -30,5 +30,13 @@
     },
     "is_top_level": true,
     "variables": {}
+  },
+  "com.booway.compass": {
+    "source": {
+      "type": "local",
+      "path": "E:\\cordovaDemo\\node_modules\\com.booway.compass"
+    },
+    "is_top_level": true,
+    "variables": {}
   }
 }

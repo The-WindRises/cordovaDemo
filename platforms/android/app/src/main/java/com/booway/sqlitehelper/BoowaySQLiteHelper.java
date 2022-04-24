@@ -5,19 +5,24 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import androidx.annotation.Nullable;
 
-public class BoowaySQLiteHelper extends SQLiteOpenHelper {
+public class BoowaySQLiteHelper extends SQLiteOpenHelper
+{
 
-    public BoowaySQLiteHelper(@Nullable Context context, @Nullable String name, @Nullable SQLiteDatabase.CursorFactory factory, int version) {
+    public BoowaySQLiteHelper(@Nullable Context context, @Nullable String name,
+            @Nullable SQLiteDatabase.CursorFactory factory, int version)
+    {
         super(context, name, factory, version);
     }
 
     @Override
-    public void onCreate(SQLiteDatabase db) {
+    public void onCreate(SQLiteDatabase db)
+    {
 
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
+    {
 
     }
 }

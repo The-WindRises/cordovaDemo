@@ -22,7 +22,8 @@ import java.io.IOException;
 
 import android.media.ExifInterface;
 
-public class ExifHelper {
+public class ExifHelper
+{
     private String aperture = null;
     private String datetime = null;
     private String exposureTime = null;
@@ -52,7 +53,8 @@ public class ExifHelper {
      * @param filePath
      * @throws IOException
      */
-    public void createInFile(String filePath) throws IOException {
+    public void createInFile(String filePath) throws IOException
+    {
         this.inFile = new ExifInterface(filePath);
     }
 
@@ -62,14 +64,16 @@ public class ExifHelper {
      * @param filePath
      * @throws IOException
      */
-    public void createOutFile(String filePath) throws IOException {
+    public void createOutFile(String filePath) throws IOException
+    {
         this.outFile = new ExifInterface(filePath);
     }
 
     /**
      * Reads all the EXIF data from the input file.
      */
-    public void readExifData() {
+    public void readExifData()
+    {
         this.aperture = inFile.getAttribute(ExifInterface.TAG_APERTURE);
         this.datetime = inFile.getAttribute(ExifInterface.TAG_DATETIME);
         this.exposureTime = inFile.getAttribute(ExifInterface.TAG_EXPOSURE_TIME);
@@ -96,90 +100,118 @@ public class ExifHelper {
      *
      * @throws IOException
      */
-    public void writeExifData() throws IOException {
+    public void writeExifData() throws IOException
+    {
         // Don't try to write to a null file
-        if (this.outFile == null) {
+        if (this.outFile == null)
+        {
             return;
         }
 
-        if (this.aperture != null) {
+        if (this.aperture != null)
+        {
             this.outFile.setAttribute(ExifInterface.TAG_APERTURE, this.aperture);
         }
-        if (this.datetime != null) {
+        if (this.datetime != null)
+        {
             this.outFile.setAttribute(ExifInterface.TAG_DATETIME, this.datetime);
         }
-        if (this.exposureTime != null) {
+        if (this.exposureTime != null)
+        {
             this.outFile.setAttribute(ExifInterface.TAG_EXPOSURE_TIME, this.exposureTime);
         }
-        if (this.flash != null) {
+        if (this.flash != null)
+        {
             this.outFile.setAttribute(ExifInterface.TAG_FLASH, this.flash);
         }
-        if (this.focalLength != null) {
+        if (this.focalLength != null)
+        {
             this.outFile.setAttribute(ExifInterface.TAG_FOCAL_LENGTH, this.focalLength);
         }
-        if (this.gpsAltitude != null) {
+        if (this.gpsAltitude != null)
+        {
             this.outFile.setAttribute(ExifInterface.TAG_GPS_ALTITUDE, this.gpsAltitude);
         }
-        if (this.gpsAltitudeRef != null) {
+        if (this.gpsAltitudeRef != null)
+        {
             this.outFile.setAttribute(ExifInterface.TAG_GPS_ALTITUDE_REF, this.gpsAltitudeRef);
         }
-        if (this.gpsDateStamp != null) {
+        if (this.gpsDateStamp != null)
+        {
             this.outFile.setAttribute(ExifInterface.TAG_GPS_DATESTAMP, this.gpsDateStamp);
         }
-        if (this.gpsLatitude != null) {
+        if (this.gpsLatitude != null)
+        {
             this.outFile.setAttribute(ExifInterface.TAG_GPS_LATITUDE, this.gpsLatitude);
         }
-        if (this.gpsLatitudeRef != null) {
+        if (this.gpsLatitudeRef != null)
+        {
             this.outFile.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, this.gpsLatitudeRef);
         }
-        if (this.gpsLongitude != null) {
+        if (this.gpsLongitude != null)
+        {
             this.outFile.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, this.gpsLongitude);
         }
-        if (this.gpsLongitudeRef != null) {
+        if (this.gpsLongitudeRef != null)
+        {
             this.outFile.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, this.gpsLongitudeRef);
         }
-        if (this.gpsProcessingMethod != null) {
+        if (this.gpsProcessingMethod != null)
+        {
             this.outFile.setAttribute(ExifInterface.TAG_GPS_PROCESSING_METHOD, this.gpsProcessingMethod);
         }
-        if (this.gpsTimestamp != null) {
+        if (this.gpsTimestamp != null)
+        {
             this.outFile.setAttribute(ExifInterface.TAG_GPS_TIMESTAMP, this.gpsTimestamp);
         }
-        if (this.iso != null) {
+        if (this.iso != null)
+        {
             this.outFile.setAttribute(ExifInterface.TAG_ISO, this.iso);
         }
-        if (this.make != null) {
+        if (this.make != null)
+        {
             this.outFile.setAttribute(ExifInterface.TAG_MAKE, this.make);
         }
-        if (this.model != null) {
+        if (this.model != null)
+        {
             this.outFile.setAttribute(ExifInterface.TAG_MODEL, this.model);
         }
-        if (this.orientation != null) {
+        if (this.orientation != null)
+        {
             this.outFile.setAttribute(ExifInterface.TAG_ORIENTATION, this.orientation);
         }
-        if (this.whiteBalance != null) {
+        if (this.whiteBalance != null)
+        {
             this.outFile.setAttribute(ExifInterface.TAG_WHITE_BALANCE, this.whiteBalance);
         }
 
         this.outFile.saveAttributes();
     }
 
-    public int getOrientation() {
+    public int getOrientation()
+    {
         int o = Integer.parseInt(this.orientation);
 
-        if (o == ExifInterface.ORIENTATION_NORMAL) {
+        if (o == ExifInterface.ORIENTATION_NORMAL)
+        {
             return 0;
-        } else if (o == ExifInterface.ORIENTATION_ROTATE_90) {
+        } else if (o == ExifInterface.ORIENTATION_ROTATE_90)
+        {
             return 90;
-        } else if (o == ExifInterface.ORIENTATION_ROTATE_180) {
+        } else if (o == ExifInterface.ORIENTATION_ROTATE_180)
+        {
             return 180;
-        } else if (o == ExifInterface.ORIENTATION_ROTATE_270) {
+        } else if (o == ExifInterface.ORIENTATION_ROTATE_270)
+        {
             return 270;
-        } else {
+        } else
+        {
             return 0;
         }
     }
 
-    public void resetOrientation() {
+    public void resetOrientation()
+    {
         this.orientation = "" + ExifInterface.ORIENTATION_NORMAL;
     }
 }

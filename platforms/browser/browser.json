@@ -29,6 +29,9 @@
     },
     "com.booway.sqlitehelper": {
       "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
+    },
+    "com.booway.compass": {
+      "PACKAGE_NAME": "com.booway.liulei.cordovaDemo"
     }
   },
   "dependent_plugins": {},
@@ -106,12 +109,21 @@
       "clobbers": [
         "SqliteHelper"
       ]
+    },
+    {
+      "file": "plugins/com.booway.compass/www/Compass.js",
+      "id": "com.booway.compass.Compass",
+      "pluginId": "com.booway.compass",
+      "clobbers": [
+        "Compass"
+      ]
     }
   ],
   "plugin_metadata": {
     "cordova-plugin-camera": "6.0.0",
     "cordova-plugin-network-information": "3.0.0",
     "cordova-plugin-inappbrowser": "5.0.0",
-    "com.booway.sqlitehelper": "0.0.1"
+    "com.booway.sqlitehelper": "0.0.1",
+    "com.booway.compass": "0.0.2"
   }
 }

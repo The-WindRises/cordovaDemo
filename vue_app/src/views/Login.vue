@@ -3,8 +3,11 @@
     <van-button type="info" class="van_button" @click="loginClick()"
       >进入
     </van-button>
-      <van-button type="info" class="van_button" @click="dBClick()"
+    <van-button type="info" class="van_button" @click="dBClick()"
       >DBHelper插件
+    </van-button>
+    <van-button type="info" class="van_button" @click="compassClick()"
+      >罗盘演示
     </van-button>
   </div>
 </template>
@@ -19,11 +22,19 @@ export default {
   methods: {
     loginClick() {
       this.$router.push({ name: "/News" });
-
     },
-    dBClick(){
-       this.$router.push({ name: "/DB" });
-    }
+    dBClick() {
+      this.$router.push({ name: "/DB" });
+    },
+    compassClick() {
+      Compass.show(
+        "compassClick",
+        function (msg) {
+          alert(msg);
+        },
+        function () {}
+      );
+    },
   },
 };
 </script>

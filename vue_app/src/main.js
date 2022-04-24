@@ -35,7 +35,7 @@ new Vue({
   },
 })
 if (process.env.NODE_ENV === 'production') {
-  window.document.addEventListener('deviceready', function () { alert("进入window.document.推送环节") }, false);
+  window.document.addEventListener('deviceready', function () { }, false);
 
 
   window.setTimeout(function () {
