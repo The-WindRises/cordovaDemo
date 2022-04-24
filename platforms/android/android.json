@@ -75,7 +75,11 @@
           ],
           "/manifest/application": [
             {
-              "xml": "<activity android:name=\"com.booway.compass.CompassActivity\" />",
+              "xml": "<activity android:configChanges=\"orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode\" android:label=\"@string/activity_name\" android:launchMode=\"singleTop\" android:name=\"com.booway.compass.CompassActivity\" android:theme=\"@style/Theme.AppCompat.NoActionBar\" android:windowSoftInputMode=\"adjustResize\" />",
+              "count": 1
+            },
+            {
+              "xml": "<meta-data android:name=\"com.amap.api.v2.apikey\" android:value=\"e8d7203165833aba9e16ae07e6dd8168\" />",
               "count": 1
             }
           ]

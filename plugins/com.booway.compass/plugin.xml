@@ -7,21 +7,34 @@
         <clobbers target="Compass" />
     </js-module>
     <platform name="android">
-        <!--允许程序打开网络套接字-->
-        <uses-permission android:name="android.permission.INTERNET" />
-        <!--允许程序设置内置sd卡的写权限-->
-        <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-        <!--允许程序获取网络状态-->
-        <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-        <!--允许程序访问WiFi网络信息-->
-        <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-        <!--允许程序读写手机状态和身份-->
-        <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-        <!--允许程序访问CellID或WiFi热点来获取粗略的位置-->
-        <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-        <meta-data android:name="com.amap.api.v2.apikey" android:value="e8d7203165833aba9e16ae07e6dd8168">
+        <!-- Normal Permissions 不需要运行时注册 -->
+        <!-- 获取运营商信息，用于支持提供运营商信息相关的接口 -->
+        <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+        <!-- 用于访问wifi网络信息，wifi信息会用于进行网络定位 -->
+        <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+        <!-- 这个权限用于获取wifi的获取权限，wifi信息会用来进行网络定位 -->
+        <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+        <uses-permission android:name="android.permission.CHANGE_CONFIGURATION"/>
 
-        </meta-data>
+        <!-- 请求网络 -->
+        <uses-permission android:name="android.permission.INTERNET"/>
+
+        <!-- 不是SDK需要的权限，是示例中的后台唤醒定位需要的权限 -->
+        <uses-permission android:name="android.permission.WAKE_LOCK"/>
+
+        <uses-permission android:name="android.permission.INTERNET" />
+        <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+        <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+        <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+        <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+        <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+        <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+        <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+        <uses-permission android:name="android.permission.WAKE_LOCK" />
+        <!--声明后台定位权限-->
+        <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+
         <config-file parent="/*" target="res/xml/config.xml">
             <feature name="Compass">
                 <param name="android-package" value="com.booway.compass.Compass" />
@@ -30,19 +43,14 @@
         <config-file parent="/*" target="AndroidManifest.xml"></config-file>
         <source-file src="src/android/Compass.java" target-dir="src/com/booway/compass" />
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
-            <activity android:name="com.booway.compass.CompassActivity"/>
+            <activity android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode" android:label="@string/activity_name" android:launchMode="singleTop" android:name="com.booway.compass.CompassActivity" android:theme="@style/Theme.AppCompat.NoActionBar" android:windowSoftInputMode="adjustResize" />
+            <meta-data android:name="com.amap.api.v2.apikey" android:value="e8d7203165833aba9e16ae07e6dd8168"/>
         </config-file>
         <source-file src="src/android/CompassActivity.java" target-dir="src/com/booway/compass" />
-
-        <!-- <source-file src="src/android/libs/armeabi/libAMapSDK_MAP_v9_2_0.so" target-dir="libs/armeabi" />
-        <source-file src="src/android/libs/armeabi-v7a/libAMapSDK_MAP_v9_2_0.so" target-dir="libs/armeabi-v7a" />
-        <source-file src="src/android/libs/arm64-v8a/libAMapSDK_MAP_v9_2_0.so" target-dir="libs/arm64-v8a" />
-        <source-file src="src/android/libs/x86/libAMapSDK_MAP_v9_2_0.so" target-dir="libs/x86" />
-        <source-file src="src/android/libs/x86_64/libAMapSDK_MAP_v9_2_0.so" target-dir="libs/x86_64" />
-        <lib-file src="src/android/libs/AMap_Location_V6.1.0_20220414.jar"  /> -->
-
+        <source-file src="src/android/CheckPermissionsActivity.java" target-dir="src/com/booway/compass" />
         <source-file src="src/android/res/layout/activity_compass_layout.xml" target-dir="res/layout" />
         <source-file src="src/android/res/drawable-hdpi/gps_point.png" target-dir="res/drawable-hdpi" />
-        <!-- <framework src="src/android/libs/compass_build.gradle" custom="true" type="gradleReference" /> -->
+        <framework src="src/android/libs/compass-build.gradle" custom="true" type="gradleReference" />
+        <service android:name="com.amap.api.location.APSService" />
     </platform>
 </plugin>
