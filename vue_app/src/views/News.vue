@@ -118,11 +118,7 @@ export default {
     };
   },
   mounted() {
-    cordova.plugins.DBHelper.coolMethod(
-      "hello",
-      (onSuccess) => {},
-      (onError) => {}
-    );
+
   },
   methods: {
     getNewsList() {
@@ -176,12 +172,7 @@ export default {
       this.work_name = "";
     },
     onClickRight() {
-      // this.showPopup();
-      cordova.plugins.DBHelper.initDB(
-        "hello",
-        (success) => {},
-        (error) => {}
-      );
+      this.showPopup();
     },
   },
 };

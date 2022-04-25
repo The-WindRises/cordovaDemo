@@ -78,6 +78,7 @@ cordova.define('cordova/plugin_list', function(require, exports, module) {
     "cordova-plugin-camera": "6.0.0",
     "cordova-plugin-inappbrowser": "5.0.0",
     "cordova-plugin-network-information": "3.0.0",
-    "com.booway.compass": "0.0.2"
+    "com.booway.compass": "0.0.2",
+    "cordova-plugin-whitelist": "1.3.4"
   };
 });

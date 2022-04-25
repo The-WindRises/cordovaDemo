@@ -7,7 +7,7 @@ const service = axios.create({
 service.interceptors.request.use(config => {
 
     config.headers['Accept'] = "application/json"
-    config.headers["Access-Control-Allow-Origin"] = "http://127.0.0.1:8080"
+    config.headers["Access-Control-Allow-Origin"] = "*"
     return config
 
 }, error => {

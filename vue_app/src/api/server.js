@@ -4,7 +4,7 @@ var newsProxy = ""
 if (process.env.NODE_ENV === 'production') {
     //cordova 不存在跨域 
 
-    newsProxy = "http://v.juhe.cn"
+    newsProxy = "https://v.juhe.cn"
 } else {
     //vue运行在浏览器存在跨域问题
 
