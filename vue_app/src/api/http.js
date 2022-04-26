@@ -3,11 +3,13 @@ import axios from 'axios'
 const service = axios.create({
     timeout: 3000
 })
+
 //请求拦截器
 service.interceptors.request.use(config => {
 
     config.headers['Accept'] = "application/json"
     config.headers["Access-Control-Allow-Origin"] = "*"
+    config.headers["Access-Control-Allow-Credentials"] = true
     return config
 
 }, error => {
@@ -15,6 +17,7 @@ service.interceptors.request.use(config => {
     Promise.reject(error)
 
 })
+ axios.defaults.withCredentials = true; 
 //响应拦截器
 service.interceptors.response.use(response => {
 

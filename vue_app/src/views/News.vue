@@ -101,8 +101,8 @@ export default {
   data: function () {
     return {
       type: "top",
-      types: [{ top: "推荐" }],
-      // types: [{ top: "推荐" }, { guonei: "国内" }, { guoji: "国际" }],
+      // types: [{ top: "推荐" }],
+      types: [{ top: "推荐" }, { guonei: "国内" }, { guoji: "国际" }],
       activeTab: 0,
       page: 1,
       page_size: 30,
@@ -150,7 +150,7 @@ export default {
     changeTab(name, title) {
       this.type = name;
 
-      this.getNewsList();
+      this.onRefresh();
     },
     showPopup() {
       this.showPop = true;
